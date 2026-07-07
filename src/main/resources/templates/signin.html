@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In | OneTech</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #05070b;
+            --bg-accent: #0b1322;
+            --card: rgba(10, 15, 24, 0.88);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text: #f5f7fb;
+            --muted: #94a3b8;
+            --brand: #2f79ff;
+            --brand-dark: #ff9f2d;
+            --shadow: 0 32px 90px rgba(0, 0, 0, 0.45);
+            --ring: 0 0 0 4px rgba(47, 121, 255, 0.22);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Inter", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(47, 121, 255, 0.18), transparent 32%),
+                radial-gradient(circle at right 15%, rgba(255, 159, 45, 0.2), transparent 28%),
+                linear-gradient(135deg, var(--bg), var(--bg-accent));
+        }
+
+        .page {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+        }
+
+        .hero, .panel { padding: 64px clamp(24px, 4vw, 72px); }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .hero::before, .hero::after {
+            content: "";
+            position: absolute;
+            border-radius: 999px;
+            filter: blur(18px);
+            opacity: 0.7;
+        }
+
+        .hero::before { width: 220px; height: 220px; background: rgba(47, 121, 255, 0.16); top: 10%; left: 8%; }
+        .hero::after { width: 300px; height: 300px; background: rgba(255, 159, 45, 0.18); bottom: 12%; right: 10%; }
+
+        .brand { position: relative; z-index: 1; }
+
+        .logo-image {
+            display: block;
+            width: min(100%, 260px);
+            height: auto;
+            filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.35));
+        }
+
+        .hero-copy { position: relative; z-index: 1; max-width: 560px; margin-top: 24px; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #dbeafe;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        h1 {
+            margin: 22px 0 16px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(3rem, 5vw, 5.5rem);
+            line-height: 0.95;
+            letter-spacing: -0.05em;
+        }
+
+        .hero p { margin: 0; max-width: 48ch; font-size: 1.05rem; line-height: 1.7; color: var(--muted); }
+
+        .features {
+            position: relative;
+            z-index: 1;
+            margin-top: 42px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .feature {
+            padding: 18px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+        }
+
+        .feature strong { display: block; margin-bottom: 6px; font-family: "Space Grotesk", sans-serif; font-size: 1.02rem; }
+        .feature span { color: #b4c1d3; font-size: 0.94rem; line-height: 1.5; }
+
+        .panel { display: grid; place-items: center; }
+
+        .card {
+            width: min(100%, 460px);
+            padding: 34px;
+            border-radius: 32px;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+            animation: floatIn 700ms ease-out both;
+        }
+
+        .card h2 { margin: 0 0 8px; font-family: "Space Grotesk", sans-serif; font-size: 2rem; }
+        .card .subtext { margin: 0 0 24px; color: var(--muted); line-height: 1.6; }
+
+        .success, .error {
+            margin-bottom: 18px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            font-weight: 600;
+        }
+        .success { background: rgba(47, 121, 255, 0.12); color: #dbeafe; border: 1px solid rgba(47, 121, 255, 0.2); }
+        .error { background: rgba(220, 38, 38, 0.12); color: #fecaca; border: 1px solid rgba(220, 38, 38, 0.2); }
+
+        form { display: grid; gap: 16px; }
+        label { display: grid; gap: 8px; font-size: 0.94rem; font-weight: 600; color: var(--text); }
+
+        input {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 14px 16px;
+            font: inherit;
+            color: var(--text);
+            background: rgba(3, 8, 18, 0.84);
+            transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+        }
+
+        input::placeholder { color: #64748b; }
+        input:focus { outline: none; border-color: rgba(47, 121, 255, 0.72); box-shadow: var(--ring); transform: translateY(-1px); }
+
+        .button {
+            border: 0;
+            border-radius: 16px;
+            padding: 15px 18px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+            color: white;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 18px 30px rgba(0, 0, 0, 0.32);
+            transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+        }
+
+        .button:hover { transform: translateY(-2px); box-shadow: 0 22px 34px rgba(0, 0, 0, 0.4); filter: brightness(1.02); }
+        .button:focus-visible { outline: none; box-shadow: var(--ring), 0 22px 34px rgba(0, 0, 0, 0.4); }
+
+        .footer-note { margin-top: 18px; color: var(--muted); font-size: 0.92rem; line-height: 1.6; text-align: center; }
+        .footer-note a { color: #cbd5e1; font-weight: 700; text-decoration: none; }
+
+        @keyframes floatIn { from { opacity: 0; transform: translateY(18px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        @media (max-width: 960px) {
+            .page { grid-template-columns: 1fr; }
+            .hero { padding-bottom: 28px; }
+            .features { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            .hero, .panel { padding: 24px; }
+            .card { padding: 24px; border-radius: 26px; }
+            h1 { font-size: clamp(2.5rem, 13vw, 4rem); }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="hero">
+            <div>
+                <div class="brand">
+                    <img th:src="@{/image/logo.png}" alt="OneTech logo" class="logo-image" />
+                </div>
+
+                <div class="hero-copy">
+                    <div class="eyebrow">Welcome back to OneTech</div>
+                    <h1>Sign in to continue.</h1>
+                    <p>Use the same email and password stored in PostgreSQL to open your account.</p>
+                </div>
+            </div>
+
+            <div class="features">
+                <article class="feature">
+                    <strong>Brand match</strong>
+                    <span>The page colors mirror the blue and orange OneTech logo.</span>
+                </article>
+                <article class="feature">
+                    <strong>Secure access</strong>
+                    <span>Credentials are checked against the PostgreSQL user table.</span>
+                </article>
+                <article class="feature">
+                    <strong>Linked flow</strong>
+                    <span>Sign in and sign up stay connected as one experience.</span>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="card">
+                <h2>Sign in</h2>
+                <p class="subtext">Enter the email and password saved in PostgreSQL.</p>
+
+                <!-- Success Message -->
+                <div th:if="${signinSuccess}" class="success">
+                    <p th:text="${signinMessage}"></p>
+                </div>
+                
+                <!-- Error Message -->
+                <div th:if="${signinError}" class="error">
+                    <p th:text="${signinMessage}"></p>
+                </div>
+
+                <!-- Signin Form -->
+                <form th:action="@{/signin}" method="post">
+                    <label>
+                        Email address
+                        <input type="email" name="email" placeholder="Enter your email address" required />
+                    </label>
+
+                    <label>
+                        Password
+                        <input type="password" name="password" placeholder="Enter your password" required />
+                    </label>
+
+                    <button class="button" type="submit">Sign in to your account</button>
+                </form>
+
+                <div class="footer-note">
+                    Need an account? <a th:href="@{/signup}">Create one</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
