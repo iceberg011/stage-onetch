@@ -65,7 +65,7 @@ public class AuthController {
                 "email", user.getEmail(),
                 "firstName", user.getFirst_name(),
                 "lastName", user.getLast_name(),
-                "phoneNumber", user.getPhone_number()
+                "phoneNumber", user.gettele_phone()
             ));
 
             return ResponseEntity.ok(response);
@@ -99,7 +99,7 @@ public class AuthController {
                     "email", user.getEmail(),
                     "firstName", user.getFirst_name(),
                     "lastName", user.getLast_name(),
-                    "phoneNumber", user.getPhone_number()
+                    "phoneNumber", user.gettele_phone()
                 ));
 
                 return ResponseEntity.ok(response);

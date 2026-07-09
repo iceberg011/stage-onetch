@@ -3,16 +3,23 @@ package com.example.demo.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.DTO.LoginRequest;
 import com.example.demo.DTO.SignupRequest;
 import com.example.demo.Entity.UserAccount;
 import com.example.demo.Repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -21,16 +28,35 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
-        System.out.println("=== UserServiceImpl CREATED ===");
+        logger.info("=== UserServiceImpl CREATED ===");
     }
 
     @Override
+    @Transactional
     public void saveUser(UserAccount user) {
-        System.out.println("Saving user: " + user.getUsername());
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
-        userRepository.save(user);
-        System.out.println("User saved successfully!");
+        try {
+            logger.info("=== SAVING USER ===");
+            logger.info("Username: {}", user.getUsername());
+            logger.info("Email: {}", user.getEmail());
+            logger.info("First Name: {}", user.getFirst_name());
+            logger.info("Last Name: {}", user.getLast_name());
+            logger.info("Date Join: {}", user.getDate_join());
+            logger.info("Login Count: {}", user.getLogin_count());
+            logger.info("Is Active: {}", user.getIs_active());
+            
+            // Encrypt password
+            String encodedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(encodedPassword);
+            logger.info("Password encoded successfully");
+            
+            // Save to database
+            UserAccount savedUser = userRepository.save(user);
+            logger.info("User saved successfully with ID: {}", savedUser.getId());
+            
+        } catch (Exception e) {
+            logger.error("Error saving user: ", e);
+            throw e;
+        }
     }
 
     @Override
@@ -41,7 +67,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserAccount getUserByEmail(String email) {
-        System.out.println("Getting user by email: " + email);
+        logger.info("Getting user by email: {}", email);
         Optional<UserAccount> user = userRepository.findByEmail(email);
         return user.orElse(null);
     }
@@ -78,23 +104,22 @@ public class UserServiceImpl implements UserService {
         return passwordEncoder.matches(password, user.getPassword());
     }
 
-    // THIS IS THE METHOD THAT WAS MISSING - NOW IMPLEMENTED
     @Override
     public boolean validateAuthenticationByEmail(String email, String password) {
-        System.out.println("validateAuthenticationByEmail called with: " + email);
+        logger.info("validateAuthenticationByEmail called with: {}", email);
         if (email == null || password == null) {
-            System.out.println("Email or password is null");
+            logger.info("Email or password is null");
             return false;
         }
         
         UserAccount user = getUserByEmail(email);
         if (user == null) {
-            System.out.println("User not found for email: " + email);
+            logger.info("User not found for email: {}", email);
             return false;
         }
         
         boolean matches = passwordEncoder.matches(password, user.getPassword());
-        System.out.println("Password matches: " + matches);
+        logger.info("Password matches: {}", matches);
         return matches;
     }
 
@@ -112,17 +137,35 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserAccount registerUser(SignupRequest request) {
         UserAccount user = new UserAccount();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setFirst_name(request.getFirstName());
         user.setLast_name(request.getLastName());
-        user.setPhone_number(request.getPhoneNumber());
+        user.settele_phone(request.gettele_phone());
         
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         user.setPassword(encodedPassword);
         
         return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void updateUserLoginInfo(UserAccount user) {
+        logger.info("Updating login info for user: {}", user.getUsername());
+        
+        Integer currentCount = user.getLogin_count();
+        if (currentCount == null) {
+            currentCount = 0;
+        }
+        user.setLogin_count(currentCount + 1);
+        user.setLast_login(LocalDateTime.now());
+        user.setUpdate_time(LocalDateTime.now());
+        
+        userRepository.save(user);
+        logger.info("Login info updated successfully. New login count: {}", user.getLogin_count());
     }
 }

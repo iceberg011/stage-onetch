@@ -26,4 +26,7 @@ public interface UserService {
     
     // ===== REGISTRATION =====
     UserAccount registerUser(SignupRequest request);
+    
+    // ===== USER MANAGEMENT =====
+    void updateUserLoginInfo(UserAccount user);  // NEW METHOD
 }
