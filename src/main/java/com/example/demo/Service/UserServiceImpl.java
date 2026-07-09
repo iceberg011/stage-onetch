@@ -104,24 +104,6 @@ public class UserServiceImpl implements UserService {
         return passwordEncoder.matches(password, user.getPassword());
     }
 
-    @Override
-    public boolean validateAuthenticationByEmail(String email, String password) {
-        logger.info("validateAuthenticationByEmail called with: {}", email);
-        if (email == null || password == null) {
-            logger.info("Email or password is null");
-            return false;
-        }
-        
-        UserAccount user = getUserByEmail(email);
-        if (user == null) {
-            logger.info("User not found for email: {}", email);
-            return false;
-        }
-        
-        boolean matches = passwordEncoder.matches(password, user.getPassword());
-        logger.info("Password matches: {}", matches);
-        return matches;
-    }
 
     @Override
     public Optional<UserAccount> authenticateUser(LoginRequest request) {
@@ -153,19 +135,44 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean validateAuthenticationByEmail(String email, String password) {
+        System.out.println("validateAuthenticationByEmail called with: " + email);
+        if (email == null || password == null) {
+            System.out.println("Email or password is null");
+            return false;
+        }
+        
+        UserAccount user = getUserByEmail(email);
+        if (user == null) {
+            System.out.println("User not found for email: " + email);
+            return false;
+        }
+        
+        boolean matches = passwordEncoder.matches(password, user.getPassword());
+        System.out.println("Password matches: " + matches);
+        return matches;
+    }
+
+    @Override
     @Transactional
     public void updateUserLoginInfo(UserAccount user) {
-        logger.info("Updating login info for user: {}", user.getUsername());
+        System.out.println("Updating login info for user: " + user.getUsername());
         
+        // Increment login count
         Integer currentCount = user.getLogin_count();
         if (currentCount == null) {
             currentCount = 0;
         }
         user.setLogin_count(currentCount + 1);
+        
+        // Update last login time
         user.setLast_login(LocalDateTime.now());
+        
+        // Update the update_time (audit field)
         user.setUpdate_time(LocalDateTime.now());
         
+        // Save the user
         userRepository.save(user);
-        logger.info("Login info updated successfully. New login count: {}", user.getLogin_count());
+        System.out.println("Login info updated. New login count: " + user.getLogin_count());
     }
 }

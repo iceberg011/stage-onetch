@@ -198,7 +198,7 @@
 
         <!-- Welcome Section -->
         <section class="welcome">
-            <h1>Welcome back, <span th:text="${session.user.first_name}"></span>!</h1>
+            <h1>Welcome back, <span th:text="${firstName}"></span>!</h1>
             <p>Here's your account overview. You're signed in and ready to go.</p>
             <div class="badge">✓ Active session</div>
 
@@ -207,21 +207,29 @@
                 <div class="info-card">
                     <div class="label">Full Name</div>
                     <div class="value">
-                        <span th:text="${session.user.first_name}"></span> 
-                        <span th:text="${session.user.last_name}"></span>
+                        <span th:text="${firstName}"></span> 
+                        <span th:text="${lastName}"></span>
                     </div>
                 </div>
                 <div class="info-card">
                     <div class="label">Username</div>
-                    <div class="value" th:text="${session.user.username}"></div>
+                    <div class="value" th:text="${username}"></div>
                 </div>
                 <div class="info-card">
                     <div class="label">Email</div>
-                    <div class="value" th:text="${session.user.email}"></div>
+                    <div class="value" th:text="${email}"></div>
                 </div>
                 <div class="info-card">
                     <div class="label">Phone</div>
-                    <div class="value" th:text="${session.user.phone_number}"></div>
+                    <div class="value" th:text="${phoneNumber != null ? phoneNumber : 'Not provided'}"></div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Login Count</div>
+                    <div class="value" th:text="${loginCount}"></div>
+                </div>
+                <div class="info-card">
+                    <div class="label">User ID</div>
+                    <div class="value" th:text="${userId}"></div>
                 </div>
             </div>
         </section>

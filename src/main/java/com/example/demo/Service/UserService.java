@@ -28,5 +28,5 @@ public interface UserService {
     UserAccount registerUser(SignupRequest request);
     
     // ===== USER MANAGEMENT =====
-    void updateUserLoginInfo(UserAccount user);  // NEW METHOD
+    void updateUserLoginInfo(UserAccount user);
 }
