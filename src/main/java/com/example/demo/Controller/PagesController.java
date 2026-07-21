@@ -6,10 +6,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PagesController {
 
-    @GetMapping("/")
+    @GetMapping("/Home")
     public String home() {
-        return "signin";
+        return "index";
     }
+
+  
+    
     
     // DO NOT add /dashboard here - DashboardController handles it
+
 }

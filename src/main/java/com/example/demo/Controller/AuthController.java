@@ -65,7 +65,10 @@ public class AuthController {
                 "email", user.getEmail(),
                 "firstName", user.getFirst_name(),
                 "lastName", user.getLast_name(),
-                "phoneNumber", user.gettele_phone()
+                "phoneNumber", user.gettele_phone(),
+                "loginCount", user.getLogin_count(),
+                "isActive", user.getIs_active(),
+                "dateJoin", user.getDate_join()
             ));
 
             return ResponseEntity.ok(response);
@@ -86,9 +89,20 @@ public class AuthController {
             if (userOpt.isPresent()) {
                 UserAccount user = userOpt.get();
                 
+                userService.updateUserLoginInfo(user);
+                
                 session.setAttribute("user", user);
+                session.setAttribute("userId", user.getId());
                 session.setAttribute("username", user.getUsername());
                 session.setAttribute("email", user.getEmail());
+                session.setAttribute("firstName", user.getFirst_name());
+                session.setAttribute("lastName", user.getLast_name());
+                session.setAttribute("phoneNumber", user.gettele_phone());
+                session.setAttribute("loginCount", user.getLogin_count());
+                session.setAttribute("isActive", user.getIs_active());
+                session.setAttribute("dateJoin", user.getDate_join());
+                session.setAttribute("lastLogin", user.getLast_login());
+                session.setAttribute("photo", user.getPhoto());
 
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
@@ -99,7 +113,11 @@ public class AuthController {
                     "email", user.getEmail(),
                     "firstName", user.getFirst_name(),
                     "lastName", user.getLast_name(),
-                    "phoneNumber", user.gettele_phone()
+                    "phoneNumber", user.gettele_phone(),
+                    "loginCount", user.getLogin_count(),
+                    "isActive", user.getIs_active(),
+                    "dateJoin", user.getDate_join(),
+                    "lastLogin", user.getLast_login()
                 ));
 
                 return ResponseEntity.ok(response);
@@ -140,6 +158,31 @@ public class AuthController {
         boolean exists = userService.existsByUsername(username);
         Map<String, Object> response = new HashMap<>();
         response.put("exists", exists);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/session")
+    public ResponseEntity<?> getSession(HttpSession session) {
+        UserAccount user = (UserAccount) session.getAttribute("user");
+        if (user == null) {
+            Map<String, String> response = new HashMap<>();
+            response.put("authenticated", "false");
+            return ResponseEntity.ok(response);
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("authenticated", true);
+        response.put("user", Map.of(
+            "id", user.getId(),
+            "username", user.getUsername(),
+            "email", user.getEmail(),
+            "firstName", user.getFirst_name(),
+            "lastName", user.getLast_name(),
+            "phoneNumber", user.gettele_phone(),
+            "loginCount", user.getLogin_count(),
+            "isActive", user.getIs_active(),
+            "dateJoin", user.getDate_join()
+        ));
         return ResponseEntity.ok(response);
     }
 }

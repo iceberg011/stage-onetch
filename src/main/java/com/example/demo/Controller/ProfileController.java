@@ -9,11 +9,11 @@ import com.example.demo.Entity.UserAccount;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-public class DashboardController {
+public class ProfileController {
 
-    @GetMapping("/dashboard")
-    public String dashboard(HttpSession session, Model model) {
-        System.out.println("=== GET /dashboard called ===");
+    @GetMapping("/dashboard/profile")
+    public String profile(HttpSession session, Model model) {
+        System.out.println("=== GET /dashboard/profile called ===");
         
         UserAccount user = (UserAccount) session.getAttribute("user");
         
@@ -22,12 +22,11 @@ public class DashboardController {
             return "redirect:/signin";
         }
         
-        // Set page title and active page (dashboard is default)
-        model.addAttribute("pageTitle", "Dashboard");
-        model.addAttribute("activePage", "DashComponent/dashboard");
-        model.addAttribute("pageContent", "DashComponent/dashboard");
+        // Set layout attributes
+        model.addAttribute("pageTitle", "My Profile");
+        model.addAttribute("pageContent", "UserProfile/AccountSettings");
         
-        // Set user attributes
+        // User attributes
         model.addAttribute("user", user);
         model.addAttribute("userId", user.getId());
         model.addAttribute("username", user.getUsername() != null ? user.getUsername() : "N/A");
@@ -36,26 +35,14 @@ public class DashboardController {
         model.addAttribute("lastName", user.getLast_name() != null ? user.getLast_name() : "");
         model.addAttribute("loginCount", user.getLogin_count() != null ? user.getLogin_count() : 0);
         model.addAttribute("isActive", user.getIs_active());
+        model.addAttribute("isSuperuser", user.getIs_superuser());
         model.addAttribute("dateJoin", user.getDate_join() != null ? user.getDate_join() : "N/A");
+        model.addAttribute("lastLogin", user.getLast_login() != null ? user.getLast_login() : "N/A");
         
+        // Phone number
         Integer phoneNumber = user.gettele_phone();
         model.addAttribute("phoneNumber", phoneNumber != null ? phoneNumber : "Not provided");
         
-        // Set the page content (this will replace the content section in layout)
-        
-        model.addAttribute("pageContent", "User/Users");
-        model.addAttribute("pageContent", "User/Newuser");
-        // Return the layout template
         return "Components/layout";
     }
-    
-    @GetMapping("/")
-    public String home(HttpSession session) {
-        UserAccount user = (UserAccount) session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/signin";
-        }
-        return "redirect:/DashComponent/dashboard";
-    }
-    
 }

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle} ?: 'Dashboard'">OneTech</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Inter", Arial, sans-serif;
+            color: #1a1a2e;
+            background: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: #0a0f18;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .sidebar-brand {
+            padding: 24px 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2f79ff;
+        }
+
+        .sidebar-brand .logo .logo-icon {
+            display: inline-block;
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            border-radius: 10px;
+            font-size: 1.2rem;
+            text-align: center;
+            line-height: 38px;
+            color: white;
+        }
+
+        .sidebar-brand .logo span {
+            color: #ff9f2d;
+        }
+
+        .sidebar-brand .subtitle {
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 4px;
+            padding-left: 48px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+
+        .sidebar-nav .nav-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
+            padding: 12px 12px 8px;
+            font-weight: 600;
+        }
+
+        .sidebar-nav .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            border-radius: 10px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .sidebar-nav .nav-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #f5f7fb;
+        }
+
+        .sidebar-nav .nav-item .icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav .nav-item .badge {
+            margin-left: auto;
+            background: rgba(47, 121, 255, 0.15);
+            color: #2f79ff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 999px;
+        }
+
+        .sidebar-nav .nav-item .arrow {
+            margin-left: auto;
+            transition: transform 0.3s ease;
+            font-size: 0.7rem;
+        }
+
+        .sidebar-nav .nav-item .arrow.open {
+            transform: rotate(90deg);
+        }
+
+        .submenu {
+            padding-left: 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .submenu.open {
+            max-height: 300px;
+        }
+
+        .submenu .nav-item {
+            padding: 8px 16px 8px 48px;
+            font-size: 0.85rem;
+            color: #7a8ba3;
+            border-radius: 8px;
+            margin-bottom: 1px;
+        }
+
+        .submenu .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #f5f7fb;
+        }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            transition: background 0.2s ease;
+        }
+
+        .sidebar-footer .user-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-footer .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sidebar-footer .user-info .name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #f5f7fb;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-footer .user-info .email {
+            font-size: 0.75rem;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-footer .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            color: #ef4444;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-top: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-footer .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 30px 36px;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: #ffffff;
+            height: 100vh;
+        }
+
+        .main-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .main-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .topbar .page-title h1 {
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            color: #1a1a2e;
+        }
+
+        .topbar .page-title p {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin: 2px 0 0;
+        }
+
+        .topbar .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar .topbar-actions .btn-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            background: #f8f9fa;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .topbar .topbar-actions .btn-icon:hover {
+            background: #e9ecef;
+            color: #1a1a2e;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            padding: 8px;
+            border: none;
+            background: #f1f3f5;
+            border-radius: 8px;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: #1a1a2e;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 99;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .content-wrapper {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .hamburger {
+                display: flex !important;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                position: relative;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <a href="/dashboard" class="logo">
+                <span class="logo-icon">⚡</span>
+                One<span>Tech</span>
+            </a>
+            <div class="subtitle">Dashboard</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-label">Main</div>
+            
+            <!-- Dashboard -->
+            <a href="/dashboard" class="nav-item">
+                <span class="icon">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                </span>
+                Dashboard
+            </a>
+
+            <!-- Users with Submenu -->
+            <div class="nav-item" onclick="toggleSubmenu()">
+                <span class="icon">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </span>
+                Users
+                <span class="badge" th:text="${userCount}">0</span>
+                <span class="arrow" id="usersArrow">▶</span>
+            </div>
+            
+            <!-- Submenu -->
+            <div class="submenu" id="usersSubmenu">
+                <a href="/dashboard/Users" class="nav-item">
+                    <span class="icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </span>
+                    Users List
+                </a>
+                <a href="/dashboard/users/CreateUser" class="nav-item">
+                    <span class="icon">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </span>
+                    Add User
+                </a>
+            </div>
+
+            <div class="nav-label" style="margin-top: 12px;">Management</div>
+
+            <!-- Profile -->
+            <a href="/dashboard/profile" class="nav-item">
+                <span class="icon">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </span>
+                Profile
+            </a>
+
+            <!-- Settings -->
+            <a href="#" class="nav-item">
+                <span class="icon">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </span>
+                Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar" th:text="${firstName != null ? firstName.substring(0, 1) : 'U'}"></div>
+                <div class="user-info">
+                    <div class="name" th:text="${firstName + ' ' + lastName}"></div>
+                    <div class="email" th:text="${email}"></div>
+                </div>
+            </div>
+            <a href="/logout" class="logout-btn">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="page-title">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button class="hamburger" id="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div>
+                        <h1 th:text="${pageTitle} ?: 'Dashboard'">Dashboard</h1>
+                        <p>Welcome back, <span th:text="${firstName}"></span>!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <a href="#" class="btn-icon">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                </a>
+                <a href="#" class="btn-icon">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content Section -->
+        <div th:replace="${pageContent} ?: 'DashboardContent/dashboard'"></div>
+    </main>
+
+    <script>
+        var hamburger = document.getElementById('hamburger');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebarOverlay');
+        var isOpen = false;
+
+        function toggleSidebar() {
+            isOpen = !isOpen;
+            if (isOpen) {
+                sidebar.className = 'sidebar open';
+                overlay.className = 'sidebar-overlay active';
+            } else {
+                sidebar.className = 'sidebar';
+                overlay.className = 'sidebar-overlay';
+            }
+        }
+
+        if (hamburger) {
+            hamburger.addEventListener('click', toggleSidebar);
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', toggleSidebar);
+        }
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768 && isOpen) {
+                toggleSidebar();
+            }
+        });
+
+        function toggleSubmenu() {
+            var submenu = document.getElementById('usersSubmenu');
+            var arrow = document.getElementById('usersArrow');
+            
+            if (!submenu || !arrow) {
+                return;
+            }
+            
+            if (submenu.classList.contains('open')) {
+                submenu.classList.remove('open');
+                arrow.classList.remove('open');
+            } else {
+                submenu.classList.add('open');
+                arrow.classList.add('open');
+            }
+        }
+
+        (function() {
+            var submenu = document.getElementById('usersSubmenu');
+            var arrow = document.getElementById('usersArrow');
+            
+            if (!submenu || !arrow) {
+                return;
+            }
+            
+            var currentUrl = window.location.href;
+            if (currentUrl.includes('/dashboard/Users') || currentUrl.includes('/dashboard/users/CreateUser')) {
+                submenu.classList.add('open');
+                arrow.classList.add('open');
+            }
+        })();
+    </script>
+</body>
+</html>

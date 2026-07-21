@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "auth_user")
 public class UserAccount {
@@ -40,14 +41,12 @@ public class UserAccount {
     @Column(name = "last_login")
     private LocalDateTime last_login;
 
+    @Column(name = "session_key", unique = true)  // UNIQUE constraint to prevent duplicate keys
     private String session_key;
+    
     private Integer login_ip;
     private String photo;
 
-
-
-
-    
     @Column(unique = true)  
     private String username;  
 
@@ -142,7 +141,6 @@ public class UserAccount {
         this.login_type = login_type;
     }
     public Integer getLogin_count() {
-        
         return login_count;
     }
 
@@ -221,7 +219,6 @@ public class UserAccount {
         this.login_ip = login_ip;
     }
 
-
     public String getPhoto() {
         return photo;
     }
@@ -246,7 +243,41 @@ public class UserAccount {
         this.update_time = update_time;
     }
 
+    // ===== REMEMBER ME HELPER METHODS =====
+    public boolean isRememberTokenValid() {
+        if (this.session_key == null || this.session_key.isEmpty()) {
+            return false;
+        }
+        // Extract timestamp from session_key (format: token_timestamp)
+        try {
+            String[] parts = this.session_key.split("_");
+            if (parts.length == 2) {
+                long timestamp = Long.parseLong(parts[1]);
+                long now = System.currentTimeMillis();
+                long diffHours = (now - timestamp) / (1000 * 60 * 60);
+                return diffHours < 24; // 24 hours expiration
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
 
+    public void clearRememberToken() {
+        this.session_key = null;
+    }
+
+    public void setRememberToken(String token) {
+        // Store token with timestamp: token_timestamp
+        this.session_key = token + "_" + System.currentTimeMillis();
+    }
     
-
+    // Get the token part only (without timestamp)
+    public String getRememberToken() {
+        if (this.session_key == null || this.session_key.isEmpty()) {
+            return null;
+        }
+        String[] parts = this.session_key.split("_");
+        return parts.length > 0 ? parts[0] : null;
+    }
 }

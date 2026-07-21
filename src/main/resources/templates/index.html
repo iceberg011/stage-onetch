@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OneTech - Your Technology Partner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ===== IE11 FALLBACK STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Inter", Arial, sans-serif;
+            color: #000000;
+            background: #FFFFFF;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 16px 36px;
+            background: rgba(5, 7, 11, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* IE11 fallback */
+            background: #05070b;
+        }
+
+        .navbar .logo {
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2f79ff;
+            text-decoration: none;
+        }
+
+        .navbar .logo span {
+            color: #ff9f2d;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-actions .btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f5f7fb;
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-primary {
+            background: #2f79ff;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #1a5fd8;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            padding: 140px 36px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+            /* IE11 fallback for grid */
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .hero-content {
+            flex: 1 1 50%;
+            min-width: 300px;
+            padding-right: 30px;
+        }
+
+        .hero-content h1 {
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 3.5rem;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            margin-bottom: 24px;
+        }
+
+        .hero-content .highlight {
+            color: #2f79ff;
+        }
+
+        .hero-content .highlight-orange {
+            color: #ff9f2d;
+        }
+
+        .hero-content p {
+            color: #94a3b8;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            max-width: 520px;
+            margin-bottom: 32px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .hero-buttons .btn {
+            padding: 14px 32px;
+            border-radius: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 1rem;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-large {
+            padding: 16px 40px;
+            font-size: 1.05rem;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f5f7fb;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .hero-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .stat {
+            flex: 1 1 100px;
+        }
+
+        .stat .number {
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2f79ff;
+        }
+
+        .stat .label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        /* ===== HERO VISUAL ===== */
+        .hero-visual {
+            flex: 1 1 40%;
+            min-width: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-card {
+            background: rgba(10, 15, 24, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 32px;
+            padding: 40px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 32px 90px rgba(0, 0, 0, 0.45);
+            /* IE11 fallback */
+            background: #FFFFFF;
+        }
+
+        .hero-card .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .hero-card h3 {
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .hero-card p {
+            color: #94a3b8;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .hero-card .feature-list {
+            margin-top: 20px;
+        }
+
+        .hero-card .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 8px;
+        }
+
+        .hero-card .feature-item .check {
+            color: #2f79ff;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* ===== FEATURES SECTION ===== */
+        .features-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 36px 80px;
+        }
+
+        .features-section h2 {
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .features-section .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-bottom: 48px;
+        }
+
+        .features-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+        }
+
+        .feature-card {
+            flex: 1 1 280px;
+            max-width: 360px;
+            background: rgba(10, 15, 24, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            /* IE11 fallback */
+            background: #0b1322;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(47, 121, 255, 0.3);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .feature-card h3 {
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: #94a3b8;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 36px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer .copyright {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .footer .links {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .footer .links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer .links a:hover {
+            color: #f5f7fb;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 968px) {
+            .hero {
+                flex-direction: column;
+                padding: 120px 24px 60px;
+                gap: 40px;
+            }
+
+            .hero-content {
+                padding-right: 0;
+                flex: 1 1 100%;
+            }
+
+            .hero-content p {
+                max-width: 100%;
+            }
+
+            .hero-visual {
+                flex: 1 1 100%;
+            }
+
+            .hero-card {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .navbar {
+                padding: 12px 20px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .nav-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nav-actions .btn {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+            }
+
+            .hero {
+                padding: 140px 16px 40px;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .stat {
+                flex: 1 1 auto;
+            }
+
+            .features-grid {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .feature-card {
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+
+            .footer {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer .links {
+                justify-content: center;
+            }
+
+            .hero-buttons .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* IE11-specific fixes */
+        .ie11-fix {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/" class="logo">One<span>Tech</span></a>
+    <div class="nav-actions">
+        <a href="/signin" class="btn btn-outline">Sign In</a>
+        <a href="/signup" class="btn btn-primary">Get Started</a>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>
+            Your <span class="highlight">Technology</span><br />
+            Partner for the <span class="highlight-orange">Future</span>
+        </h1>
+        <p>
+            OneTech provides cutting-edge technology solutions for businesses
+            of all sizes. From cloud infrastructure to AI-powered analytics,
+            we help you stay ahead of the curve.
+        </p>
+        <div class="hero-buttons">
+            <a href="/signup" class="btn btn-primary btn-large">Get Started Free</a>
+            <a href="#features" class="btn btn-secondary btn-large">Learn More</a>
+        </div>
+
+        <div class="hero-stats">
+            <div class="stat">
+                <div class="number">10K+</div>
+                <div class="label">Active Users</div>
+            </div>
+            <div class="stat">
+                <div class="number">99.9%</div>
+                <div class="label">Uptime Guarantee</div>
+            </div>
+            <div class="stat">
+                <div class="number">24/7</div>
+                <div class="label">Support Available</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-visual">
+        <div class="hero-card">
+            <div class="feature-icon">🚀</div>
+            <h3>Why OneTech?</h3>
+            <p>Everything you need to succeed in the digital age, all in one platform.</p>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <span class="check">✓</span>
+                    <span>Secure &amp; Scalable Infrastructure</span>
+                </div>
+                <div class="feature-item">
+                    <span class="check">✓</span>
+                    <span>AI-Powered Analytics &amp; Insights</span>
+                </div>
+                <div class="feature-item">
+                    <span class="check">✓</span>
+                    <span>Enterprise-Grade Security</span>
+                </div>
+                <div class="feature-item">
+                    <span class="check">✓</span>
+                    <span>Dedicated Support Team</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features-section">
+    <h2>Everything You Need to <span class="highlight">Succeed</span></h2>
+    <p class="subtitle">Powerful features designed to help your business grow and thrive.</p>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="icon">☁️</div>
+            <h3>Cloud Infrastructure</h3>
+            <p>Scalable cloud solutions that grow with your business. Deploy, manage, and scale with ease.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🤖</div>
+            <h3>AI &amp; Machine Learning</h3>
+            <p>Leverage the power of artificial intelligence to gain insights and make data-driven decisions.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🔒</div>
+            <h3>Enterprise Security</h3>
+            <p>Bank-grade security to protect your data and ensure compliance with industry standards.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">📊</div>
+            <h3>Real-Time Analytics</h3>
+            <p>Monitor your business performance in real-time with customizable dashboards and reports.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🌐</div>
+            <h3>Global Network</h3>
+            <p>Deploy your applications across multiple regions with our global network of data centers.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">💬</div>
+            <h3>24/7 Support</h3>
+            <p>Our expert team is always available to help you with any questions or issues you may have.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="copyright">
+        &copy; 2026 OneTech. All rights reserved.
+    </div>
+    <div class="links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Contact Us</a>
+    </div>
+</footer>
+
+<!-- IE11 conditional comment for polyfills -->
+<!--[if lt IE 10]>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+<![endif]-->
+</body>
+</html>

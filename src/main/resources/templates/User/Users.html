@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Users List</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Page Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h2 style="font-family: 'Space Grotesk', Arial, sans-serif; font-size: 1.8rem; margin-bottom: 4px; color: #1a1a2e;">Users List</h2>
+                <p style="color: #6c757d;">Manage all registered users in the system</p>
+            </div>
+            <a href="/dashboard/users/CreateUser" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 12px; font-weight: 600; text-decoration: none; background: linear-gradient(135deg, #2f79ff, #ff9f2d); color: white; box-shadow: 0 4px 15px rgba(47, 121, 255, 0.3);">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add User
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="color: #6c757d; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Total Users</div>
+                    <div style="font-family: 'Space Grotesk', Arial, sans-serif; font-size: 1.8rem; font-weight: 700; margin-top: 2px; color: #1a1a2e;" th:text="${userCount}">0</div>
+                </div>
+                <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(47, 121, 255, 0.12); color: #2f79ff;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5 0a6 6 0 00-13 0m13.5 0h.008v.008h-.008v-.008zm-13.5 0h.008v.008h-.008v-.008z"/>
+                    </svg>
+                </div>
+            </div>
+            <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="color: #6c757d; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Active</div>
+                    <div style="font-family: 'Space Grotesk', Arial, sans-serif; font-size: 1.8rem; font-weight: 700; margin-top: 2px; color: #1a1a2e;" th:text="${activeUsers}">0</div>
+                </div>
+                <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(34, 197, 94, 0.12); color: #22c55e;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="color: #6c757d; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Inactive</div>
+                    <div style="font-family: 'Space Grotesk', Arial, sans-serif; font-size: 1.8rem; font-weight: 700; margin-top: 2px; color: #1a1a2e;" th:text="${inactiveUsers}">0</div>
+                </div>
+                <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="color: #6c757d; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Administrators</div>
+                    <div style="font-family: 'Space Grotesk', Arial, sans-serif; font-size: 1.8rem; font-weight: 700; margin-top: 2px; color: #1a1a2e;" th:text="${adminCount}">0</div>
+                </div>
+                <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(138, 43, 226, 0.12); color: #8a2be2;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & Filter Bar -->
+        <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;">
+            <form method="get" action="/dashboard/Users" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                <!-- Search Input -->
+                <div style="flex: 1; min-width: 200px; position: relative;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6c757d;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="search" placeholder="Search users..." 
+                           th:value="${searchQuery}" 
+                           style="padding: 10px 14px 10px 36px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; width: 100%; outline: none; transition: border-color 0.2s ease;">
+                </div>
+
+                <!-- Search Field -->
+                <select name="field" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; outline: none; min-width: 140px;">
+                    <option value="all" th:selected="${selectedField == null or selectedField == 'all'}">All Fields</option>
+                    <option value="first_name" th:selected="${selectedField == 'first_name'}">First Name</option>
+                    <option value="last_name" th:selected="${selectedField == 'last_name'}">Last Name</option>
+                    <option value="email" th:selected="${selectedField == 'email'}">Email</option>
+                    <option value="username" th:selected="${selectedField == 'username'}">Username</option>
+                    <option value="phone" th:selected="${selectedField == 'phone'}">Phone</option>
+                </select>
+
+                <!-- Sort -->
+                <select name="sort" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; outline: none; min-width: 140px;">
+                    <option value="asc" th:selected="${selectedSort == null or selectedSort == 'asc'}">Ascending</option>
+                    <option value="desc" th:selected="${selectedSort == 'desc'}">Descending</option>
+                </select>
+
+                <!-- Filter by Role -->
+                <select name="role" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; outline: none; min-width: 140px;">
+                    <option value="all" th:selected="${selectedRole == null or selectedRole == 'all'}">All Roles</option>
+                    <option value="admin" th:selected="${selectedRole == 'admin'}">Administrator</option>
+                    <option value="staff" th:selected="${selectedRole == 'staff'}">Staff</option>
+                    <option value="user" th:selected="${selectedRole == 'user'}">User</option>
+                </select>
+
+                <!-- Filter by Status -->
+                <select name="status" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; outline: none; min-width: 140px;">
+                    <option value="all" th:selected="${selectedStatus == null or selectedStatus == 'all'}">All Status</option>
+                    <option value="active" th:selected="${selectedStatus == 'active'}">Active</option>
+                    <option value="inactive" th:selected="${selectedStatus == 'inactive'}">Inactive</option>
+                </select>
+
+                <!-- Buttons -->
+                <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer; background: linear-gradient(135deg, #2f79ff, #1a5fd8); color: white; box-shadow: 0 4px 15px rgba(47, 121, 255, 0.2);">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Search
+                </button>
+
+                <a href="/dashboard/Users" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; background: #f1f3f5; color: #1a1a2e; border: 1px solid #e9ecef;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Clear
+                </a>
+            </form>
+
+            <!-- Active Filters Display -->
+            <div th:if="${searchQuery != null or selectedRole != null or selectedStatus != null}" 
+                 style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef;">
+                <span style="font-size: 0.85rem; color: #6c757d; display: flex; align-items: center;">Active Filters:</span>
+                
+                <span th:if="${searchQuery != null}" 
+                      style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #e8f4fd; border-radius: 999px; font-size: 0.8rem; color: #2f79ff;">
+                    Search: <strong th:text="${searchQuery}"></strong>
+                    <a th:href="'/dashboard/Users?search=&field=' + ${selectedField} + '&sort=' + ${selectedSort} + '&role=' + ${selectedRole} + '&status=' + ${selectedStatus}" 
+                       style="color: #2f79ff; text-decoration: none;">✕</a>
+                </span>
+                
+                <span th:if="${selectedRole != null and selectedRole != 'all'}" 
+                      style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #fef3c7; border-radius: 999px; font-size: 0.8rem; color: #d97706;">
+                    Role: <strong th:text="${selectedRole}"></strong>
+                    <a th:href="'/dashboard/Users?search=' + ${searchQuery} + '&field=' + ${selectedField} + '&sort=' + ${selectedSort} + '&status=' + ${selectedStatus}" 
+                       style="color: #d97706; text-decoration: none;">✕</a>
+                </span>
+                
+                <span th:if="${selectedStatus != null and selectedStatus != 'all'}" 
+                      style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #d1fae5; border-radius: 999px; font-size: 0.8rem; color: #059669;">
+                    Status: <strong th:text="${selectedStatus}"></strong>
+                    <a th:href="'/dashboard/Users?search=' + ${searchQuery} + '&field=' + ${selectedField} + '&sort=' + ${selectedSort} + '&role=' + ${selectedRole}" 
+                       style="color: #059669; text-decoration: none;">✕</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div style="background: #ffffff; border: 1px solid #e9ecef; border-radius: 16px; overflow: auto;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                <thead style="background: #f8f9fa;">
+                    <tr>
+                        <th style="padding: 12px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; font-weight: 600; border-bottom: 1px solid #e9ecef;">ID</th>
+                        <th style="padding: 12px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; font-weight: 600; border-bottom: 1px solid #e9ecef;">User</th>
+                        <th style="padding: 12px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; font-weight: 600; border-bottom: 1px solid #e9ecef;">Email</th>
+                        <th style="padding: 12px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; font-weight: 600; border-bottom: 1px solid #e9ecef;">Phone</th>
+                        <th style="padding: 12px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; font-weight: 600; border-bottom: 1px solid #e9ecef;">Username</th>
+                        <th style="padding: 12px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; font-weight: 600; border-bottom: 1px solid #e9ecef;">Role</th>
+                        <th style="padding: 12px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; font-weight: 600; border-bottom: 1px solid #e9ecef;">Status</th>
+                        <th style="padding: 12px 16px; text-align: right; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; font-weight: 600; border-bottom: 1px solid #e9ecef;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${users}" th:if="${users != null and not users.isEmpty()}">
+                        <td style="padding: 12px 16px; border-bottom: 1px solid #f1f3f5; color: #6c757d;" th:text="${user.id}">1</td>
+                        
+                        <td style="padding: 12px 16px; border-bottom: 1px solid #f1f3f5;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #2f79ff, #ff9f2d); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.75rem; color: white;" 
+                                     th:text="${#strings.substring(user.first_name, 0, 1)}"></div>
+                                <div>
+                                    <div style="font-weight: 500; color: #1a1a2e;" th:text="${user.first_name + ' ' + user.last_name}"></div>
+                                    <div style="color: #6c757d; font-size: 0.8rem;" th:text="'@' + ${user.username}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td style="padding: 12px 16px; border-bottom: 1px solid #f1f3f5; color: #1a1a2e;" th:text="${user.email}"></td>
+                        
+                        <td style="padding: 12px 16px; border-bottom: 1px solid #f1f3f5; color: #1a1a2e;" th:text="${user.gettele_phone() != null ? user.gettele_phone() : 'N/A'}"></td>
+                        
+                        <td style="padding: 12px 16px; border-bottom: 1px solid #f1f3f5; color: #1a1a2e;" th:text="${user.username}"></td>
+                        
+                        <td style="padding: 12px 16px; border-bottom: 1px solid #f1f3f5;">
+                            <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: rgba(239, 68, 68, 0.12); color: #ef4444;" 
+                                  th:text="${user.is_superuser} ? 'Administrator' : (user.is_staff ? 'Staff' : 'User')">User</span>
+                        </td>
+                        
+                        <td style="padding: 12px 16px; border-bottom: 1px solid #f1f3f5;">
+                            <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: rgba(34, 197, 94, 0.12); color: #22c55e;" 
+                                  th:text="${user.is_active} ? 'Active' : 'Inactive'">Active</span>
+                        </td>
+                        
+                        <td style="padding: 12px 16px; border-bottom: 1px solid #f1f3f5; text-align: right;">
+                            <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                                <a th:href="'/dashboard/users/edit/' + ${user.id}" style="padding: 4px 10px; font-size: 0.8rem; border-radius: 8px; text-decoration: none; background: rgba(47, 121, 255, 0.1); color: #2f79ff;">View</a>
+                                <a th:href="'/dashboard/users/edit/' + ${user.id}" style="padding: 4px 10px; font-size: 0.8rem; border-radius: 8px; text-decoration: none; background: rgba(255, 159, 45, 0.1); color: #ff9f2d;">Edit</a>
+                                <a th:href="'/dashboard/users/delete/' + ${user.id}" style="padding: 4px 10px; font-size: 0.8rem; border-radius: 8px; text-decoration: none; background: rgba(239, 68, 68, 0.1); color: #ef4444;" 
+                                   onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- No Users Message -->
+        <div th:if="${users == null or users.isEmpty()}" style="text-align: center; padding: 60px 20px; color: #6c757d;">
+            <div style="font-size: 4rem; margin-bottom: 16px;">👥</div>
+            <h3 style="color: #1a1a2e; margin-bottom: 8px;">No users found</h3>
+            <p style="margin-bottom: 16px;" th:text="${searchQuery != null} ? 'No users match your search criteria.' : 'There are no users registered in the system yet.'"></p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a th:if="${searchQuery != null}" href="/dashboard/Users" style="display: inline-block; padding: 10px 24px; background: #f1f3f5; color: #1a1a2e; border-radius: 8px; text-decoration: none; font-weight: 600; border: 1px solid #e9ecef;">Clear Filters</a>
+                <a href="/dashboard/users/CreateUser" style="display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #2f79ff, #ff9f2d); color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">Add your first user</a>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div th:if="${users != null and not users.isEmpty()}" style="margin-top: 16px; padding: 12px 16px; background: #e8f4fd; border-radius: 8px; font-size: 0.85rem; color: #1a1a2e; border: 1px solid #2f79ff; display: flex; justify-content: space-between; flex-wrap: wrap;">
+            <span><strong>📊 Total Users:</strong> <span th:text="${users.size()}"></span></span>
+            <span><strong>👤 Active:</strong> <span th:text="${activeUsers}"></span></span>
+            <span><strong>🚫 Inactive:</strong> <span th:text="${inactiveUsers}"></span></span>
+            <span><strong>🛡️ Administrators:</strong> <span th:text="${adminCount}"></span></span>
+            <span th:if="${searchQuery != null}"><strong>🔍 Search:</strong> <span th:text="${searchQuery}"></span></span>
+        </div>
+    </div>
+</body>
+</html>
