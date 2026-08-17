@@ -2,7 +2,7 @@ package com.example.demo.Service;
 
 import com.example.demo.DTO.LoginRequest;
 import com.example.demo.DTO.SignupRequest;
-import com.example.demo.Entity.UserAccount;
+import com.example.demo.Entity.qsd;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -11,9 +11,9 @@ import java.util.List;
 public interface UserService {
     
     // ===== BASIC CRUD =====
-    void saveUser(UserAccount user);
-    UserAccount getUserByUsername(String username);
-    UserAccount getUserByEmail(String email);
+    void saveUser(qsd user);
+    qsd getUserByUsername(String username);
+    qsd getUserByEmail(String email);
     
     // ===== EXISTENCE CHECKS =====
     boolean userExists(String username);
@@ -24,25 +24,25 @@ public interface UserService {
     // ===== AUTHENTICATION =====
     boolean validateAuthentication(String username, String password);
     boolean validateAuthenticationByEmail(String email, String password);
-    Optional<UserAccount> authenticateUser(LoginRequest request);
+    Optional<qsd> authenticateUser(LoginRequest request);
     
     // ===== REGISTRATION =====
-    UserAccount registerUser(SignupRequest request);
+    qsd registerUser(SignupRequest request);
     
     // ===== USER MANAGEMENT =====
-    void updateUserLoginInfo(UserAccount user);
+    void updateUserLoginInfo(qsd user);
     
     // ===== REMEMBER ME (using session_key) =====
-    UserAccount findBySessionKey(String sessionKey);
-    UserAccount findByRememberToken(String token);
+    qsd findBySessionKey(String sessionKey);
+    qsd findByRememberToken(String token);
     void saveSessionKey(Long userId, String sessionKey);
     void clearSessionKey(Long userId);
 
 
 
-    List<UserAccount> searchUsers(String searchTerm, String field, String sort, String role, String status);
-    List<UserAccount> searchUsersByKeyword(String keyword);
-    List<UserAccount> filterUsersByRole(String role);
-    List<UserAccount> filterUsersByStatus(String status);
-    List<UserAccount> sortUsers(List<UserAccount> users, String field, String sortDirection);
+    List<qsd> searchUsers(String searchTerm, String field, String sort, String role, String status);
+    List<qsd> searchUsersByKeyword(String keyword);
+    List<qsd> filterUsersByRole(String role);
+    List<qsd> filterUsersByStatus(String status);
+    List<qsd> sortUsers(List<qsd> users, String field, String sortDirection);
 }

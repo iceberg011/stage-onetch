@@ -62,6 +62,20 @@
                             <div style="color: #6c757d; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Last Login</div>
                             <div style="font-weight: 500; color: #1a1a2e; margin-top: 4px;" th:text="${lastLogin != null ? lastLogin : 'First login'}"></div>
                         </div>
+                        <!-- Departments -->
+                        <div style="background: #f8f9fa; border-radius: 12px; padding: 14px 16px; grid-column: 1 / -1;">
+                            <div style="color: #6c757d; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Departments</div>
+                            <div style="margin-top: 4px;">
+                                <div th:if="${userDepartments != null and not userDepartments.isEmpty()}">
+                                    <span th:each="dept : ${userDepartments}" 
+                                        style="display: inline-block; padding: 4px 14px; margin: 2px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; background: rgba(47, 121, 255, 0.12); color: #2f79ff;">
+                                        <span th:text="${dept.dept_name}"></span>
+                                    </span>
+                                </div>
+                                <span th:if="${userDepartments == null or userDepartments.isEmpty()}" 
+                                    style="color: #6c757d; font-size: 0.9rem;">No departments assigned</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,747 @@
+package com.example.demo.Controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.example.demo.Entity.qsd;
+import com.example.demo.Entity.link;
+import com.example.demo.Repository.UserRepository;
+
+import jakarta.servlet.http.HttpSession;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
+import com.example.demo.Service.UserService;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import com.example.demo.Entity.departments;
+import com.example.demo.Repository.DepartmentRepository;
+import com.example.demo.Repository.LinkRepository;
+
+
+
+
+
+@Controller
+public class UsersController {
+
+    private final UserRepository userRepository;
+    private final UserService userService;
+
+    
+
+
+
+
+
+
+    public UsersController(UserRepository userRepository, UserService userService) {
+        this.userRepository = userRepository;
+        this.userService = userService;
+    }
+
+    // ===== LIST ALL USERS WITH SEARCH & FILTER =====
+    @GetMapping("/dashboard/Users")
+    public String listUsers(
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "field", required = false) String field,
+            @RequestParam(value = "sort", required = false) String sort,
+            @RequestParam(value = "role", required = false) String role,
+            @RequestParam(value = "status", required = false) String status,
+            HttpSession session,
+            Model model) {
+        
+        System.out.println("=== GET /dashboard/Users called ===");
+        System.out.println("Search: " + search);
+        System.out.println("Field: " + field);
+        System.out.println("Sort: " + sort);
+        System.out.println("Role: " + role);
+        System.out.println("Status: " + status);
+        
+        qsd currentUser = (qsd) session.getAttribute("user");
+        
+        if (currentUser == null) {
+            System.out.println("User not logged in, redirecting to signin");
+            return "redirect:/signin";
+        }
+        
+        // ===== CALL THE SEARCH FUNCTION =====
+        List<qsd> filteredUsers = userService.searchUsers(search, field, sort, role, status);
+        
+        // Calculate statistics
+        long totalUsers = filteredUsers.size();
+        long activeUsers = 0;
+        long inactiveUsers = 0;
+        long adminCount = 0;
+        
+        for (qsd user : filteredUsers) {
+            if (user.getIs_active()) {
+                activeUsers++;
+            } else {
+                inactiveUsers++;
+            }
+            if (user.getIs_superuser()) {
+                adminCount++;
+            }
+        }
+        
+        // Set layout attributes
+        model.addAttribute("pageTitle", "Users");
+        model.addAttribute("pageContent", "User/Users");
+        
+        // User info for sidebar
+        model.addAttribute("user", currentUser);
+        model.addAttribute("firstName", currentUser.getFirst_name());
+        model.addAttribute("lastName", currentUser.getLast_name());
+        model.addAttribute("email", currentUser.getEmail());
+        model.addAttribute("username", currentUser.getUsername());
+        
+        // User statistics
+        model.addAttribute("userCount", totalUsers);
+        model.addAttribute("activeUsers", activeUsers);
+        model.addAttribute("inactiveUsers", inactiveUsers);
+        model.addAttribute("adminCount", adminCount);
+        
+        // ALL users for the table
+        model.addAttribute("users", filteredUsers);
+        
+        // Preserve filter values for the form
+        model.addAttribute("searchQuery", search);
+        model.addAttribute("selectedField", field);
+        model.addAttribute("selectedSort", sort);
+        model.addAttribute("selectedRole", role);
+        model.addAttribute("selectedStatus", status);
+        
+        return "Components/layout";
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+    
+    @Autowired
+    private DepartmentRepository departmentRepository;
+    
+    @Autowired
+    private LinkRepository linkRepository;
+    
+  
+
+    // ===== EDIT USER (GET) =====
+@GetMapping("/dashboard/users/edit/{id}")
+public String editUser(
+        @PathVariable Long id,
+        HttpSession session,
+        Model model) {
+    
+    System.out.println("=== GET /dashboard/users/edit/" + id + " called ===");
+    
+    qsd currentUser = (qsd) session.getAttribute("user");
+    
+    if (currentUser == null) {
+        return "redirect:/signin";
+    }
+    
+    // Find user by ID
+    Optional<qsd> userOpt = userRepository.findById(id);
+    
+    if (userOpt.isEmpty()) {
+        System.out.println("User not found with ID: " + id);
+        return "redirect:/dashboard/Users?error=UserNotFound";
+    }
+    
+    qsd userToEdit = userOpt.get();
+    
+    // Get all departments
+    List<departments> departments = departmentRepository.findAll();
+    model.addAttribute("departments", departments);
+    
+    // Get user's current department IDs from the link table
+    List<link> userLinks = linkRepository.findByMyuser_id(Math.toIntExact(id));
+    List<Integer> userDepartmentIds = userLinks.stream()
+            .map(link::getdepartment_id)
+            .collect(Collectors.toList());
+    model.addAttribute("userDepartments", userDepartmentIds);
+    
+    // ===== DEBUG: Show user's current department in terminal =====
+    System.out.println("\n--- USER DEPARTMENT INFO ---");
+    System.out.println("User: " + userToEdit.getUsername() + " (ID: " + userToEdit.getId() + ")");
+    if (userDepartmentIds.isEmpty()) {
+        System.out.println("Currently assigned to: No Department");
+    } else {
+        for (Integer deptId : userDepartmentIds) {
+            Optional<departments> deptOpt = departmentRepository.findById(deptId.longValue());
+            if (deptOpt.isPresent()) {
+                departments dept = deptOpt.get();
+                System.out.println("Currently assigned to: " + dept.getdept_name() + " (ID: " + deptId + ")");
+            }
+        }
+    }
+    System.out.println("==============================\n");
+    
+    model.addAttribute("user", userToEdit);
+    model.addAttribute("pageTitle", "Edit User");
+    model.addAttribute("pageContent", "User/EditUser");
+    model.addAttribute("firstName", currentUser.getFirst_name());
+    model.addAttribute("lastName", currentUser.getLast_name());
+    model.addAttribute("email", currentUser.getEmail());
+    model.addAttribute("username", currentUser.getUsername());
+    
+    return "Components/layout";
+}
+
+// ===== UPDATE USER =====
+@PostMapping("/dashboard/users/update/{id}")
+public String updateUser(
+        @PathVariable Long id,
+        @RequestParam("first_name") String firstName,
+        @RequestParam("last_name") String lastName,
+        @RequestParam("email") String email,
+        @RequestParam(value = "tele_phone", required = false) String telePhone,
+        @RequestParam("username") String username,
+        @RequestParam(value = "password", required = false) String password,
+        @RequestParam(value = "confirm_password", required = false) String confirmPassword,
+        @RequestParam(value = "role", defaultValue = "user") String role,
+        @RequestParam(value = "is_active", defaultValue = "true") String isActive,
+        @RequestParam(value = "is_staff", defaultValue = "false") boolean isStaff,
+        @RequestParam(value = "is_superuser", defaultValue = "false") boolean isSuperuser,
+        @RequestParam(value = "is_public", defaultValue = "false") boolean isPublic,
+        @RequestParam(value = "can_manage_all_dept", defaultValue = "false") boolean canManageAllDept,
+        @RequestParam(value = "department_id", required = false) Integer departmentId,
+        HttpSession session,
+        Model model) {
+
+    System.out.println("\n=== POST /dashboard/users/update/" + id + " called ===");
+    System.out.println("Department ID received: " + departmentId);
+    
+    qsd currentUser = (qsd) session.getAttribute("user");
+    
+    if (currentUser == null) {
+        return "redirect:/signin";
+    }
+    
+    // Find user by ID
+    Optional<qsd> userOpt = userRepository.findById(id);
+    
+    if (userOpt.isEmpty()) {
+        System.out.println("User not found with ID: " + id);
+        return "redirect:/dashboard/Users?error=UserNotFound";
+    }
+    
+    qsd userToUpdate = userOpt.get();
+    System.out.println("Updating user: " + userToUpdate.getUsername());
+    
+    // Check if password is being changed
+    if (password != null && !password.isEmpty()) {
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("error", "Passwords do not match");
+            model.addAttribute("user", userToUpdate);
+            model.addAttribute("pageTitle", "Edit User");
+            model.addAttribute("pageContent", "User/EditUser");
+            // Load departments for the form again
+            model.addAttribute("departments", departmentRepository.findAll());
+            List<link> userLinks = linkRepository.findByMyuser_id(Math.toIntExact(id));
+            List<Integer> userDepartmentIds = userLinks.stream()
+                    .map(link::getdepartment_id)
+                    .collect(Collectors.toList());
+            model.addAttribute("userDepartments", userDepartmentIds);
+            model.addAttribute("firstName", currentUser.getFirst_name());
+            model.addAttribute("lastName", currentUser.getLast_name());
+            model.addAttribute("email", currentUser.getEmail());
+            model.addAttribute("username", currentUser.getUsername());
+            return "Components/layout";
+        }
+        // Set new password (will be encrypted in service)
+        userToUpdate.setPassword(password);
+        System.out.println("Password updated for user: " + userToUpdate.getUsername());
+    }
+    
+    // Update user fields
+    userToUpdate.setFirst_name(firstName);
+    userToUpdate.setLast_name(lastName);
+    userToUpdate.setEmail(email);
+    userToUpdate.setUsername(username);
+    userToUpdate.setIs_active("true".equalsIgnoreCase(isActive));
+    userToUpdate.setIs_staff(isStaff);
+    userToUpdate.setIs_superuser(isSuperuser);
+    userToUpdate.setIs_public(isPublic);
+    userToUpdate.setCan_manage_all_dept(canManageAllDept);
+    userToUpdate.setUpdate_time(LocalDateTime.now());
+    
+    // Update phone number
+    if (telePhone != null && !telePhone.isEmpty()) {
+        try {
+            userToUpdate.settele_phone(Integer.parseInt(telePhone));
+        } catch (NumberFormatException e) {
+            userToUpdate.settele_phone(null);
+        }
+    } else {
+        userToUpdate.settele_phone(null);
+    }
+    
+    try {
+        // ===== HANDLE DEPARTMENT ASSIGNMENT IN LINK TABLE =====
+        System.out.println("\n--- DEPARTMENT ASSIGNMENT ---");
+        
+        // First, delete all existing department links for this user
+        linkRepository.deleteByMyuser_id(Math.toIntExact(id));
+        System.out.println("Deleted existing department links for user ID: " + id);
+        
+        // If a department is selected, create a new link
+        if (departmentId != null && departmentId > 0) {
+            // Verify the department exists
+            Optional<departments> deptOpt = departmentRepository.findById(departmentId.longValue());
+            if (deptOpt.isPresent()) {
+                departments department = deptOpt.get();
+                
+                // Create new link entry - SAVE USER ID AND DEPARTMENT ID IN LINK TABLE
+                link newLink = new link();
+                newLink.setmyuser_id(Math.toIntExact(id));  // User ID
+                newLink.setdepartment_id(departmentId);      // Department ID
+                linkRepository.save(newLink);
+                
+                System.out.println("✅ LINK SAVED TO auth_user_auth_dept:");
+                System.out.println("   User ID: " + id + " (User: " + userToUpdate.getUsername() + ")");
+                System.out.println("   Department ID: " + departmentId + " (Department: " + department.getdept_name() + ")");
+                System.out.println("   User " + userToUpdate.getUsername() + " assigned to department: " + department.getdept_name());
+            } else {
+                System.out.println("❌ Department not found with ID: " + departmentId);
+            }
+        } else {
+            System.out.println("ℹ️ No department selected - user will have no department assigned");
+            System.out.println("   User " + userToUpdate.getUsername() + " has no department assigned");
+        }
+        System.out.println("============================\n");
+        
+        // Save user
+        userService.saveUser(userToUpdate);
+        System.out.println("✅ User updated successfully: " + userToUpdate.getUsername());
+        
+        return "redirect:/dashboard/Users?success=UserUpdated";
+        
+    } catch (Exception e) {
+        System.err.println("❌ Error updating user: " + e.getMessage());
+        e.printStackTrace();
+        
+        model.addAttribute("error", "Error updating user: " + e.getMessage());
+        model.addAttribute("user", userToUpdate);
+        model.addAttribute("pageTitle", "Edit User");
+        model.addAttribute("pageContent", "User/EditUser");
+        // Load departments for the form again
+        model.addAttribute("departments", departmentRepository.findAll());
+        List<link> userLinks = linkRepository.findByMyuser_id(Math.toIntExact(id));
+        List<Integer> userDepartmentIds = userLinks.stream()
+                .map(link::getdepartment_id)
+                .collect(Collectors.toList());
+        model.addAttribute("userDepartments", userDepartmentIds);
+        model.addAttribute("firstName", currentUser.getFirst_name());
+        model.addAttribute("lastName", currentUser.getLast_name());
+        model.addAttribute("email", currentUser.getEmail());
+        model.addAttribute("username", currentUser.getUsername());
+        return "Components/layout";
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    // ===== DELETE USER =====
+    @GetMapping("/dashboard/users/delete/{id}")
+    public String deleteUser(@PathVariable Long id, HttpSession session) {
+        System.out.println("=== GET /dashboard/users/delete/" + id + " called ===");
+        
+        qsd currentUser = (qsd) session.getAttribute("user");
+        
+        if (currentUser == null) {
+            return "redirect:/signin";
+        }
+        
+        // Don't allow deleting yourself
+        if (currentUser.getId().equals(id)) {
+            return "redirect:/dashboard/Users?error=CannotDeleteSelf";
+        }
+        
+        Optional<qsd> userOpt = userRepository.findById(id);
+        
+        if (userOpt.isPresent()) {
+            userRepository.deleteById(id);
+            System.out.println("User deleted with ID: " + id);
+            return "redirect:/dashboard/Users?success=UserDeleted";
+        }
+        
+        return "redirect:/dashboard/Users?error=UserNotFound";
+    }
+
+    @GetMapping("/api/users")
+    @ResponseBody
+    public List<qsd> getAllUsersJson() {
+        return userRepository.findAll();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+   
+    
+
+    
+
+     @PostMapping("/dashboard/users/CreateUser")
+    public String addUser(
+            @RequestParam("first_name") String firstName,
+            @RequestParam("last_name") String lastName,
+            @RequestParam("email") String email,
+            @RequestParam(value = "tele_phone", required = false) String telePhone,
+            @RequestParam(value = "username", required = false) String username,
+            @RequestParam("password") String password,
+            @RequestParam("confirm_password") String confirmPassword,
+            @RequestParam(value = "role", defaultValue = "user") String role,
+            @RequestParam(value = "is_active", defaultValue = "true") String isActive,
+            @RequestParam(value = "is_staff", defaultValue = "false") boolean isStaff,
+            @RequestParam(value = "is_superuser", defaultValue = "false") boolean isSuperuser,
+            @RequestParam(value = "is_public", defaultValue = "false") boolean isPublic,
+            @RequestParam(value = "can_manage_all_dept", defaultValue = "false") boolean canManageAllDept,
+            @RequestParam(value = "department_id", required = false) String departmentId,
+            HttpSession session,
+            Model model) {
+
+        System.out.println("=== POST /dashboard/users/CreateUser called ===");
+        System.out.println("Department ID received: " + departmentId);
+        
+        qsd currentUser = (qsd) session.getAttribute("user");
+        if (currentUser == null) {
+            return "redirect:/signin";
+        }
+
+        // Validate required fields
+        if (firstName == null || firstName.trim().isEmpty()) {
+            model.addAttribute("error", "First name is required");
+            model.addAttribute("departments", departmentRepository.findAll());
+            model.addAttribute("pageTitle", "Add New User");
+            model.addAttribute("pageContent", "User/Newuser");
+            model.addAttribute("firstName", currentUser.getFirst_name());
+            model.addAttribute("lastName", currentUser.getLast_name());
+            model.addAttribute("email", currentUser.getEmail());
+            return "Components/layout";
+        }
+
+        if (lastName == null || lastName.trim().isEmpty()) {
+            model.addAttribute("error", "Last name is required");
+            model.addAttribute("departments", departmentRepository.findAll());
+            model.addAttribute("pageTitle", "Add New User");
+            model.addAttribute("pageContent", "User/Newuser");
+            model.addAttribute("firstName", currentUser.getFirst_name());
+            model.addAttribute("lastName", currentUser.getLast_name());
+            model.addAttribute("email", currentUser.getEmail());
+            return "Components/layout";
+        }
+
+        if (email == null || email.trim().isEmpty()) {
+            model.addAttribute("error", "Email is required");
+            model.addAttribute("departments", departmentRepository.findAll());
+            model.addAttribute("pageTitle", "Add New User");
+            model.addAttribute("pageContent", "User/Newuser");
+            model.addAttribute("firstName", currentUser.getFirst_name());
+            model.addAttribute("lastName", currentUser.getLast_name());
+            model.addAttribute("email", currentUser.getEmail());
+            return "Components/layout";
+        }
+
+        // Verify passwords match
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("error", "Passwords do not match");
+            model.addAttribute("departments", departmentRepository.findAll());
+            model.addAttribute("pageTitle", "Add New User");
+            model.addAttribute("pageContent", "User/Newuser");
+            model.addAttribute("firstName", currentUser.getFirst_name());
+            model.addAttribute("lastName", currentUser.getLast_name());
+            model.addAttribute("email", currentUser.getEmail());
+            return "Components/layout";
+        }
+
+        // Validate password length
+        if (password.length() < 8) {
+            model.addAttribute("error", "Password must be at least 8 characters long");
+            model.addAttribute("departments", departmentRepository.findAll());
+            model.addAttribute("pageTitle", "Add New User");
+            model.addAttribute("pageContent", "User/Newuser");
+            model.addAttribute("firstName", currentUser.getFirst_name());
+            model.addAttribute("lastName", currentUser.getLast_name());
+            model.addAttribute("email", currentUser.getEmail());
+            return "Components/layout";
+        }
+
+        // Check if email exists
+        if (userService.userExistsByEmail(email)) {
+            model.addAttribute("error", "Email already exists");
+            model.addAttribute("departments", departmentRepository.findAll());
+            model.addAttribute("pageTitle", "Add New User");
+            model.addAttribute("pageContent", "User/Newuser");
+            model.addAttribute("firstName", currentUser.getFirst_name());
+            model.addAttribute("lastName", currentUser.getLast_name());
+            model.addAttribute("email", currentUser.getEmail());
+            return "Components/layout";
+        }
+
+        // Generate username if not provided
+        if (username == null || username.trim().isEmpty()) {
+            username = generateUsername(firstName, lastName);
+        }
+
+        // Check if username exists and generate unique username
+        if (userService.userExists(username)) {
+            int counter = 1;
+            String baseUsername = username;
+            while (userService.userExists(username)) {
+                username = baseUsername + counter;
+                counter++;
+            }
+            System.out.println("Generated unique username: " + username);
+        }
+
+        // Create new user
+        qsd newUser = new qsd();
+        newUser.setFirst_name(firstName.trim());
+        newUser.setLast_name(lastName.trim());
+        newUser.setEmail(email.trim().toLowerCase());
+        newUser.setUsername(username.toLowerCase());
+        newUser.setPassword(password);
+        newUser.setDate_join(LocalDate.now());
+        newUser.setUpdate_time(LocalDateTime.now());
+        newUser.setLogin_count(0);
+        newUser.setLogin_ip(0);
+        newUser.setLogin_id(0);
+        newUser.setLogin_type("email");
+        newUser.setIs_active("true".equalsIgnoreCase(isActive));
+        newUser.setIs_staff(isStaff);
+        newUser.setIs_superuser(isSuperuser);
+        newUser.setIs_public(isPublic);
+        newUser.setCan_manage_all_dept(canManageAllDept);
+        newUser.setDel_flag(0);
+        newUser.setPhoto("/static/user/default.png");
+
+        // Set phone number
+        if (telePhone != null && !telePhone.trim().isEmpty()) {
+            try {
+                newUser.settele_phone(Integer.parseInt(telePhone.trim()));
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid phone number format: " + telePhone);
+            }
+        }
+
+        try {
+            // Save user
+            userService.saveUser(newUser);
+            System.out.println("User created successfully with ID: " + newUser.getId() + ", Username: " + newUser.getUsername());
+            
+            // Link user to department if selected
+            if (departmentId != null && !departmentId.trim().isEmpty() && !departmentId.equals("")) {
+                try {
+                    Integer deptId = Integer.parseInt(departmentId.trim());
+                    if (deptId > 0) {
+                        // Verify department exists
+                        Optional<departments> deptOpt = departmentRepository.findById(deptId.longValue());
+                        if (deptOpt.isPresent()) {
+                            link link = new link();
+                            link.setmyuser_id(Math.toIntExact(newUser.getId()));
+                            link.setdepartment_id(deptId);
+                            linkRepository.save(link);
+                            System.out.println("User linked to department ID: " + deptId);
+                            
+                            departments department = deptOpt.get();
+                            System.out.println("User " + newUser.getUsername() + " assigned to department: " + department.getdept_name());
+                        } else {
+                            System.out.println("Department not found with ID: " + deptId);
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid department ID format: " + departmentId);
+                }
+            } else {
+                System.out.println("No department selected for user: " + newUser.getUsername());
+            }
+            
+            return "redirect:/dashboard/Users?success=UserCreated";
+            
+        } catch (Exception e) {
+            System.err.println("Error creating user: " + e.getMessage());
+            e.printStackTrace();
+            
+            model.addAttribute("error", "Error creating user: " + e.getMessage());
+            model.addAttribute("departments", departmentRepository.findAll());
+            model.addAttribute("pageTitle", "Add New User");
+            model.addAttribute("pageContent", "User/Newuser");
+            model.addAttribute("firstName", currentUser.getFirst_name());
+            model.addAttribute("lastName", currentUser.getLast_name());
+            model.addAttribute("email", currentUser.getEmail());
+            return "Components/layout";
+        }
+    }
+
+    
+    @GetMapping("/dashboard/users/CreateUser")
+    public String showCreateUserForm(HttpSession session, Model model) {
+        System.out.println("=== GET /dashboard/users/CreateUser called ===");
+        
+        try {
+            qsd currentUser = (qsd) session.getAttribute("user");
+            
+            if (currentUser == null) {
+                System.out.println("User not logged in, redirecting to signin");
+                return "redirect:/signin";
+            }
+            System.out.println("departmentRepository: " + departmentRepository);
+
+            System.out.println("departmentnames: " + departmentRepository.findAll());
+
+            System.out.println("Current user: " + currentUser.getUsername());
+            
+            // Get all departments to display in dropdown
+            System.out.println("Fetching departments from database...");
+            List<departments> departments = departmentRepository.findAll();
+            System.out.println("Found " + departments.size() + " departments");
+            
+            // Debug - print each department
+            if (departments.isEmpty()) {
+                System.out.println("⚠️ WARNING: No departments found!");
+            } else {
+                for (departments dept : departments) {
+                    System.out.println("Department: ID=" + dept.getId() + ", Name=" + dept.getdept_name());
+                }
+            }
+            
+            model.addAttribute("departments", departments);
+            model.addAttribute("pageTitle", "Add New User");
+            model.addAttribute("pageContent", "User/Newuser");
+            model.addAttribute("firstName", currentUser.getFirst_name());
+            model.addAttribute("lastName", currentUser.getLast_name());
+            model.addAttribute("email", currentUser.getEmail());
+            model.addAttribute("username", currentUser.getUsername());
+            
+            System.out.println("Returning to Components/layout");
+            return "Components/layout";
+            
+        } catch (Exception e) {
+            System.err.println("ERROR in showCreateUserForm: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Error loading page: " + e.getMessage());
+            return "Components/layout";
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    private String generateUsername(String firstName, String lastName) {
+        if (firstName == null || firstName.isEmpty()) {
+            firstName = "user";
+        }
+        if (lastName == null || lastName.isEmpty()) {
+            lastName = "unknown";
+        }
+        String firstLetter = firstName.substring(0, 1);
+        return (firstLetter + lastName).toLowerCase().replaceAll("\\s+", "");
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+    

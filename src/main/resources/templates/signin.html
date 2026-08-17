@@ -392,8 +392,8 @@
             <!-- Signin Form -->
             <form th:action="@{/signin}" method="post">
                 <div class="form-group">
-                    <label for="email">Email address</label>
-                    <input type="email" id="email" name="email" placeholder="Enter your email address" required />
+                    <label for="username">Username or Email</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username or email" required />
                 </div>
 
                 <div class="form-group">
@@ -411,8 +411,11 @@
                 <button class="button" type="submit">Sign in to your account</button>
             </form>
 
-            <div class="footer-note">
+            <div class="footer-note">   
                 Need an account? <a th:href="@{/signup}">Create one</a>
+            </div>
+            <div class="footer-note">   
+                 <a th:href="@{/Home}">Back to Home</a>
             </div>
         </div>
     </section>

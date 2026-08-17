@@ -4,12 +4,13 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OneTech - Your Technology Partner</title>
+    <title th:text="${pageTitle}">OneTech - Your Technology Partner</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
     <style>
-        /* ===== IE11 FALLBACK STYLES ===== */
+        /* ===== RESET & BASE ===== */
         * {
             margin: 0;
             padding: 0;
@@ -17,49 +18,315 @@
         }
 
         body {
+            background: #05070b;
+            color: #f5f7fb;
             font-family: "Inter", Arial, sans-serif;
-            color: #000000;
-            background: #FFFFFF;
-            min-height: 100vh;
+            padding-top: 80px;
             overflow-x: hidden;
         }
 
         /* ===== NAVBAR ===== */
         .navbar {
+            padding: 16px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(5, 7, 11, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: 16px 36px;
-            background: rgba(5, 7, 11, 0.95);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            /* IE11 fallback */
-            background: #05070b;
         }
 
-        .navbar .logo {
+        .logo {
             font-family: "Space Grotesk", Arial, sans-serif;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            color: #2f79ff;
             text-decoration: none;
+            color: #f5f7fb;
         }
 
-        .navbar .logo span {
-            color: #ff9f2d;
+        .logo span {
+            color: #2f79ff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #f5f7fb;
         }
 
         .nav-actions {
             display: flex;
             gap: 12px;
             align-items: center;
+            position: relative;
         }
 
-        .nav-actions .btn {
+        /* ===== USER PROFILE BUTTON ===== */
+        .user-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 4px 12px 4px 4px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #f5f7fb;
+            position: relative;
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .user-profile-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(47, 121, 255, 0.3);
+        }
+
+        .user-profile-btn .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .user-profile-btn .avatar svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+        }
+
+        .user-profile-btn .user-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .user-profile-btn .dropdown-arrow {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            margin-left: 4px;
+            transition: transform 0.3s ease;
+        }
+
+        .user-profile-btn.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* ===== SIDEBAR OVERLAY ===== */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .sidebar-overlay.open {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            max-width: 90vw;
+            height: 100vh;
+            background: #0a0f18;
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 2001;
+            transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        /* ===== SIDEBAR HEADER ===== */
+        .sidebar-header {
+            padding: 32px 24px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .sidebar-user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sidebar-user-info .avatar-large {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .sidebar-user-info .user-details {
+            flex: 1;
+        }
+
+        .sidebar-user-info .user-details .name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f5f7fb;
+        }
+
+        .sidebar-user-info .user-details .email {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .sidebar-user-info .user-details .role-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 4px;
+            background: rgba(47, 121, 255, 0.15);
+            color: #2f79ff;
+            border: 1px solid rgba(47, 121, 255, 0.2);
+        }
+
+        .sidebar-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.3s ease;
+            line-height: 1;
+        }
+
+        .sidebar-close:hover {
+            color: #f5f7fb;
+        }
+
+        /* ===== SIDEBAR NAVIGATION ===== */
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+        }
+
+        .sidebar-nav .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-nav .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            padding: 0 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .sidebar-nav .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: "Inter", Arial, sans-serif;
+        }
+
+        .sidebar-nav .nav-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #f5f7fb;
+        }
+
+        .sidebar-nav .nav-item .icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-nav .nav-item .badge {
+            margin-left: auto;
+            background: rgba(47, 121, 255, 0.2);
+            color: #2f79ff;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .sidebar-nav .nav-item.logout-item {
+            color: #ef4444;
+            margin-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 16px;
+        }
+
+        .sidebar-nav .nav-item.logout-item:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
             padding: 10px 24px;
             border-radius: 12px;
             font-weight: 600;
@@ -67,26 +334,62 @@
             font-size: 0.95rem;
             display: inline-block;
             transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-family: "Inter", Arial, sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2f79ff, #1a5fd8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(47, 121, 255, 0.3);
         }
 
         .btn-outline {
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f5f7fb;
             background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #f5f7fb;
         }
 
         .btn-outline:hover {
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .btn-primary {
-            background: #2f79ff;
-            color: white;
-            border: none;
+        .btn-large {
+            padding: 16px 40px;
+            font-size: 1.05rem;
         }
 
-        .btn-primary:hover {
-            background: #1a5fd8;
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f5f7fb;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: #f5f7fb;
+            transition: all 0.3s ease;
         }
 
         /* ===== HERO SECTION ===== */
@@ -94,33 +397,43 @@
             padding: 140px 36px 80px;
             max-width: 1200px;
             margin: 0 auto;
-            /* IE11 fallback for grid */
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            min-height: 100vh;
+            min-height: 80vh;
+            gap: 60px;
         }
 
         .hero-content {
             flex: 1 1 50%;
             min-width: 300px;
-            padding-right: 30px;
+        }
+
+        .hero-content .badge {
+            display: inline-block;
+            background: rgba(47, 121, 255, 0.15);
+            color: #2f79ff;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid rgba(47, 121, 255, 0.2);
         }
 
         .hero-content h1 {
             font-family: "Space Grotesk", Arial, sans-serif;
-            font-size: 3.5rem;
+            font-size: 4rem;
             line-height: 1.05;
             letter-spacing: -0.04em;
             margin-bottom: 24px;
         }
 
-        .hero-content .highlight {
-            color: #2f79ff;
-        }
-
-        .hero-content .highlight-orange {
-            color: #ff9f2d;
+        .hero-content h1 .highlight {
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .hero-content p {
@@ -137,47 +450,23 @@
             flex-wrap: wrap;
         }
 
-        .hero-buttons .btn {
-            padding: 14px 32px;
-            border-radius: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            font-size: 1rem;
-            display: inline-block;
-            transition: all 0.3s ease;
-        }
-
-        .btn-large {
-            padding: 16px 40px;
-            font-size: 1.05rem;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f5f7fb;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
         .hero-stats {
             display: flex;
             flex-wrap: wrap;
-            gap: 24px;
+            gap: 40px;
             margin-top: 48px;
             padding-top: 32px;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .stat {
-            flex: 1 1 100px;
+            flex: 1 1 auto;
+            min-width: 100px;
         }
 
         .stat .number {
             font-family: "Space Grotesk", Arial, sans-serif;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
             color: #2f79ff;
         }
@@ -188,7 +477,6 @@
             margin-top: 4px;
         }
 
-        /* ===== HERO VISUAL ===== */
         .hero-visual {
             flex: 1 1 40%;
             min-width: 300px;
@@ -198,15 +486,13 @@
         }
 
         .hero-card {
-            background: rgba(10, 15, 24, 0.88);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 32px;
             padding: 40px;
             width: 100%;
             max-width: 480px;
             box-shadow: 0 32px 90px rgba(0, 0, 0, 0.45);
-            /* IE11 fallback */
-            background: #FFFFFF;
         }
 
         .hero-card .feature-icon {
@@ -239,29 +525,43 @@
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .hero-card .feature-item:hover {
+            background: rgba(47, 121, 255, 0.08);
+            border-color: rgba(47, 121, 255, 0.2);
+            transform: translateX(6px);
         }
 
         .hero-card .feature-item .check {
-            color: #2f79ff;
+            color: #22c55e;
             font-weight: 700;
             font-size: 1.2rem;
         }
 
-        /* ===== FEATURES SECTION ===== */
-        .features-section {
+        /* ===== FEATURES GRID ===== */
+        .features-grid-section {
             max-width: 1200px;
             margin: 0 auto;
             padding: 60px 36px 80px;
         }
 
-        .features-section h2 {
+        .features-grid-section h2 {
             font-family: "Space Grotesk", Arial, sans-serif;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             text-align: center;
             margin-bottom: 16px;
         }
 
-        .features-section .subtitle {
+        .features-grid-section h2 .highlight {
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-grid-section .subtitle {
             text-align: center;
             color: #94a3b8;
             font-size: 1.1rem;
@@ -269,22 +569,18 @@
         }
 
         .features-grid {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 24px;
-            justify-content: center;
         }
 
         .feature-card {
-            flex: 1 1 280px;
-            max-width: 360px;
-            background: rgba(10, 15, 24, 0.88);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
             padding: 32px;
+            text-align: center;
             transition: all 0.3s ease;
-            /* IE11 fallback */
-            background: #0b1322;
         }
 
         .feature-card:hover {
@@ -310,86 +606,488 @@
             font-size: 0.95rem;
         }
 
-        /* ===== FOOTER ===== */
-        .footer {
+        /* ===== TESTIMONIALS ===== */
+        .testimonials-content {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 36px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
+            padding: 40px 36px 80px;
         }
 
-        .footer .copyright {
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(47, 121, 255, 0.2);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .testimonial-card .stars {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .testimonial-card blockquote {
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        .testimonial-card .author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .testimonial-card .author .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+        }
+
+        .testimonial-card .author .name {
+            font-weight: 600;
+            color: #f5f7fb;
+        }
+
+        .testimonial-card .author .role {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        hr {
+            max-width: 1200px;
+            margin: 0 auto;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: rgba(5, 7, 11, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 60px 36px 30px;
+        }
+
+        .footer .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+        }
+
+        .footer .brand .logo {
+            font-size: 1.4rem;
+        }
+
+        .footer .brand p {
             color: #94a3b8;
             font-size: 0.9rem;
+            line-height: 1.7;
+            margin-top: 12px;
+            max-width: 280px;
         }
 
-        .footer .links {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
+        .footer h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #f5f7fb;
         }
 
-        .footer .links a {
+        .footer ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer ul li a {
             color: #94a3b8;
             text-decoration: none;
             font-size: 0.9rem;
             transition: color 0.3s ease;
         }
 
-        .footer .links a:hover {
+        .footer ul li a:hover {
             color: #f5f7fb;
         }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 968px) {
-            .hero {
-                flex-direction: column;
-                padding: 120px 24px 60px;
-                gap: 40px;
-            }
+        .footer .bottom {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-top: 20px;
+        }
 
-            .hero-content {
-                padding-right: 0;
-                flex: 1 1 100%;
-            }
+        .footer .bottom .copyright {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
 
-            .hero-content p {
-                max-width: 100%;
-            }
+        .footer .bottom .social {
+            display: flex;
+            gap: 16px;
+        }
 
-            .hero-visual {
-                flex: 1 1 100%;
-            }
+        .footer .bottom .social a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
 
-            .hero-card {
-                max-width: 100%;
+        .footer .bottom .social a:hover {
+            color: #f5f7fb;
+        }
+
+        /* ===== CHAT BUBBLE ===== */
+        .chat-bubble {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+        }
+
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(47, 121, 255, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(47, 121, 255, 0.5);
+        }
+
+        .chat-toggle .close-icon {
+            display: none;
+        }
+
+        .chat-toggle.active .chat-icon {
+            display: none;
+        }
+
+        .chat-toggle.active .close-icon {
+            display: inline;
+        }
+
+        .chat-window {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 380px;
+            height: 500px;
+            background: #0a0f18;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .chat-window.open {
+            display: flex;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #2f79ff, #1a5fd8);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .chat-header .info {
+            flex: 1;
+        }
+
+        .chat-header .info .name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: white;
+        }
+
+        .chat-header .info .status {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .chat-header .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 16px 20px;
+            overflow-y: auto;
+            background: #0a0f18;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        @media (max-width: 640px) {
-            .navbar {
-                padding: 12px 20px;
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message .bubble {
+            max-width: 80%;
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.bot .bubble {
+            background: rgba(255, 255, 255, 0.06);
+            color: #f5f7fb;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user .bubble {
+            background: linear-gradient(135deg, #2f79ff, #1a5fd8);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message .bubble .typing-dots {
+            display: flex;
+            gap: 4px;
+            padding: 4px 0;
+        }
+
+        .message .bubble .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: typing 1.4s infinite;
+        }
+
+        .message .bubble .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .message .bubble .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.3;
+            }
+            30% {
+                transform: translateY(-6px);
+                opacity: 1;
+            }
+        }
+
+        .quick-replies {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 8px 16px 16px;
+            background: #0a0f18;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .quick-reply-btn {
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: "Inter", Arial, sans-serif;
+        }
+
+        .quick-reply-btn:hover {
+            background: rgba(47, 121, 255, 0.15);
+            border-color: #2f79ff;
+            color: #f5f7fb;
+        }
+
+        .chat-input {
+            padding: 12px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            gap: 10px;
+            background: #0a0f18;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #f5f7fb;
+            font-size: 0.9rem;
+            font-family: "Inter", Arial, sans-serif;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input input:focus {
+            border-color: #2f79ff;
+        }
+
+        .chat-input input::placeholder {
+            color: #64748b;
+        }
+
+        .chat-input button {
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #2f79ff, #1a5fd8);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: "Inter", Arial, sans-serif;
+        }
+
+        .chat-input button:hover {
+            transform: scale(1.05);
+        }
+
+        .chat-input button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .hero-content h1 {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
                 flex-direction: column;
-                gap: 12px;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                padding: 20px;
+                background: rgba(5, 7, 11, 0.98);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                gap: 16px;
             }
 
-            .nav-actions {
-                width: 100%;
-                justify-content: center;
+            .nav-links.open {
+                display: flex;
             }
 
-            .nav-actions .btn {
-                padding: 8px 16px;
-                font-size: 0.85rem;
+            .hamburger {
+                display: flex;
+            }
+
+            .user-profile-btn .user-name {
+                display: none;
+            }
+
+            .sidebar {
+                width: 320px;
             }
 
             .hero {
-                padding: 140px 16px 40px;
+                padding: 100px 20px 60px;
+                gap: 40px;
             }
 
             .hero-content h1 {
@@ -401,165 +1099,710 @@
                 gap: 12px;
             }
 
-            .stat {
-                flex: 1 1 auto;
-            }
-
-            .features-grid {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .feature-card {
-                flex: 1 1 100%;
-                max-width: 100%;
-            }
-
-            .footer {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .footer .links {
-                justify-content: center;
-            }
-
             .hero-buttons .btn {
                 width: 100%;
                 text-align: center;
             }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features-grid-section h2 {
+                font-size: 2rem;
+            }
+
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .footer .bottom {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .chat-window {
+                width: 320px;
+                height: 450px;
+                right: -10px;
+            }
+
+            .chat-toggle {
+                width: 52px;
+                height: 52px;
+                font-size: 1.4rem;
+            }
         }
 
-        /* IE11-specific fixes */
-        .ie11-fix {
-            display: block;
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 12px 16px;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-width: 100vw;
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .hero {
+                padding: 80px 16px 40px;
+            }
+
+            .hero-card {
+                padding: 24px;
+            }
+
+            .features-grid-section {
+                padding: 40px 16px 60px;
+            }
+
+            .testimonials-content {
+                padding: 20px 16px 60px;
+            }
+
+            .footer {
+                padding: 40px 16px 20px;
+            }
         }
     </style>
 </head>
 <body>
-<!-- Navbar -->
-<nav class="navbar">
-    <a href="/" class="logo">One<span>Tech</span></a>
-    <div class="nav-actions">
-        <a href="/signin" class="btn btn-outline">Sign In</a>
-        <a href="/signup" class="btn btn-primary">Get Started</a>
-    </div>
-</nav>
-
-<!-- Hero Section -->
-<section class="hero">
-    <div class="hero-content">
-        <h1>
-            Your <span class="highlight">Technology</span><br />
-            Partner for the <span class="highlight-orange">Future</span>
-        </h1>
-        <p>
-            OneTech provides cutting-edge technology solutions for businesses
-            of all sizes. From cloud infrastructure to AI-powered analytics,
-            we help you stay ahead of the curve.
-        </p>
-        <div class="hero-buttons">
-            <a href="/signup" class="btn btn-primary btn-large">Get Started Free</a>
-            <a href="#features" class="btn btn-secondary btn-large">Learn More</a>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">One<span>Tech</span></a>
+        <div class="nav-links" id="navLinks">
+            <a href="/" th:classappend="${activePage == 'accueil'} ? 'active' : ''">Accueil</a>
+            <a href="/about" th:classappend="${activePage == 'about'} ? 'active' : ''">About</a>
+            <a href="/Leave" th:classappend="${activePage == 'Leave'} ? 'active' : ''">Holidays</a>
+            <a href="/services" th:classappend="${activePage == 'services'} ? 'active' : ''">Services</a>
+            <a href="/contact" th:classappend="${activePage == 'contact'} ? 'active' : ''">Contact</a>
         </div>
 
-        <div class="hero-stats">
-            <div class="stat">
-                <div class="number">10K+</div>
-                <div class="label">Active Users</div>
+        <!-- ===== NAV ACTIONS ===== -->
+        <div class="nav-actions">
+            <!-- If user is logged in, show profile button -->
+            <div th:if="${employee != null}">
+                <button class="user-profile-btn" id="profileBtn" onclick="toggleSidebar()">
+                    <div class="avatar" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21a8 8 0 0 0-16 0" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                    </div>
+                    <span class="user-name" th:text="${displayName}">Employee</span>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
             </div>
-            <div class="stat">
-                <div class="number">99.9%</div>
-                <div class="label">Uptime Guarantee</div>
-            </div>
-            <div class="stat">
-                <div class="number">24/7</div>
-                <div class="label">Support Available</div>
-            </div>
-        </div>
-    </div>
 
-    <div class="hero-visual">
-        <div class="hero-card">
-            <div class="feature-icon">🚀</div>
-            <h3>Why OneTech?</h3>
-            <p>Everything you need to succeed in the digital age, all in one platform.</p>
-            <div class="feature-list">
-                <div class="feature-item">
-                    <span class="check">✓</span>
-                    <span>Secure &amp; Scalable Infrastructure</span>
-                </div>
-                <div class="feature-item">
-                    <span class="check">✓</span>
-                    <span>AI-Powered Analytics &amp; Insights</span>
-                </div>
-                <div class="feature-item">
-                    <span class="check">✓</span>
-                    <span>Enterprise-Grade Security</span>
-                </div>
-                <div class="feature-item">
-                    <span class="check">✓</span>
-                    <span>Dedicated Support Team</span>
+            <!-- If user is NOT logged in, show sign in and sign up -->
+            <div th:if="${employee == null}">
+                <a href="/signin" class="btn btn-outline">Sign In</a>
+                <a href="/signup" class="btn btn-primary">Get Started</a>
+            </div>
+
+            <button class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===== SIDEBAR OVERLAY ===== -->
+    <div th:if="${employee != null}" class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <div th:if="${employee != null}" class="sidebar" id="sidebar">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+            <div class="sidebar-user-info">
+                <div class="avatar-large" th:text="${profileInitial}">U</div>
+                <div class="user-details">
+                    <div class="name" th:text="${displayName}">User Name</div>
+                    <div class="email" th:text="${email}">user@email.com</div>
+                    <span class="role-badge" th:text="${isAdmin ? 'Administrator' : 'User'}">User</span>
                 </div>
             </div>
+            <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <a href="/dashboard" class="nav-item" th:if="${canAccessDashboard}">
+                    <span class="icon">📊</span>
+                    Dashboard
+                </a>
+                <a href="/dashboard/profile" class="nav-item">
+                    <span class="icon">👤</span>
+                    My Profile
+                </a>
+                <a href="/ShowLeave" class="nav-item">
+                    <span class="icon">📋</span>
+                    My Leaves
+                    <span class="badge" th:text="${pendingLeaves}">3</span>
+                </a>
+            </div>
+
+            <!-- Admin Section - Only visible to admins -->
+            <div class="nav-section" th:if="${isAdmin}">
+                <div class="nav-section-title">Administration</div>
+                <a href="/dashboard/Employees" class="nav-item">
+                    <span class="icon">👥</span>
+                    Manage Users
+                    <span class="badge" th:text="${totalUsers}">12</span>
+                </a>
+                <a href="/dashboard/departments" class="nav-item">
+                    <span class="icon">🏢</span>
+                    Departments
+                </a>
+                <a href="/dashboard/leaves/all" class="nav-item">
+                    <span class="icon">📊</span>
+                    All Leaves
+                </a>
+                <a href="/dashboard/settings" class="nav-item">
+                    <span class="icon">⚙️</span>
+                    System Settings
+                </a>
+            </div>
+
+            <!-- Support Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Support</div>
+                <a href="/help" class="nav-item">
+                    <span class="icon">❓</span>
+                    Help Center
+                </a>
+                <a href="/contact" class="nav-item">
+                    <span class="icon">💬</span>
+                    Contact Support
+                </a>
+            </div>
+
+            <!-- Logout -->
+            <a href="/logout" class="nav-item logout-item">
+                <span class="icon">🚪</span>
+                Logout
+                <span style="margin-left: auto; font-size: 0.8rem; color: #94a3b8;">→</span>
+            </a>
         </div>
     </div>
-</section>
 
-<!-- Features Section -->
-<section id="features" class="features-section">
-    <h2>Everything You Need to <span class="highlight">Succeed</span></h2>
-    <p class="subtitle">Powerful features designed to help your business grow and thrive.</p>
+    <!-- ===== HERO SECTION ===== -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge">🚀 Next-Gen Technology</div>
+            <h1>
+                Your <span class="highlight">Technology</span><br />
+                Partner for the <span class="highlight">Future</span>
+            </h1>
+            <p>
+                OneTech provides cutting-edge technology solutions for businesses
+                of all sizes. From cloud infrastructure to AI-powered analytics,
+                we help you stay ahead of the curve.
+            </p>
+            <div class="hero-buttons">
+                <a href="/signup" class="btn btn-primary btn-large">Get Started Free</a>
+                <a href="/about" class="btn btn-secondary btn-large">Learn More</a>
+            </div>
 
-    <div class="features-grid">
-        <div class="feature-card">
-            <div class="icon">☁️</div>
-            <h3>Cloud Infrastructure</h3>
-            <p>Scalable cloud solutions that grow with your business. Deploy, manage, and scale with ease.</p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="number">10K+</div>
+                    <div class="label">Active Users</div>
+                </div>
+                <div class="stat">
+                    <div class="number">99.9%</div>
+                    <div class="label">Uptime Guarantee</div>
+                </div>
+                <div class="stat">
+                    <div class="number">24/7</div>
+                    <div class="label">Support Available</div>
+                </div>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="icon">🤖</div>
-            <h3>AI &amp; Machine Learning</h3>
-            <p>Leverage the power of artificial intelligence to gain insights and make data-driven decisions.</p>
+
+        <div class="hero-visual">
+            <div class="hero-card">
+                <div class="feature-icon">🚀</div>
+                <h3>Why OneTech?</h3>
+                <p>Everything you need to succeed in the digital age, all in one platform.</p>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Secure &amp; Scalable Infrastructure</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>AI-Powered Analytics &amp; Insights</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Enterprise-Grade Security</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Dedicated Support Team</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="icon">🔒</div>
-            <h3>Enterprise Security</h3>
-            <p>Bank-grade security to protect your data and ensure compliance with industry standards.</p>
+    </section>
+
+    <!-- ===== FEATURES GRID ===== -->
+    <section class="features-grid-section">
+        <h2>Everything You Need to <span class="highlight">Succeed</span></h2>
+        <p class="subtitle">Powerful features designed to help your business grow and thrive.</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon">☁️</div>
+                <h3>Cloud Infrastructure</h3>
+                <p>Scalable cloud solutions that grow with your business.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🤖</div>
+                <h3>AI &amp; Machine Learning</h3>
+                <p>Leverage AI to gain insights and make data-driven decisions.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔒</div>
+                <h3>Enterprise Security</h3>
+                <p>Bank-grade security to protect your data and ensure compliance.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📊</div>
+                <h3>Real-Time Analytics</h3>
+                <p>Monitor your business performance in real-time.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🌐</div>
+                <h3>Global Network</h3>
+                <p>Deploy across multiple regions with our global network.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">💬</div>
+                <h3>24/7 Support</h3>
+                <p>Our expert team is always available to help you.</p>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="icon">📊</div>
-            <h3>Real-Time Analytics</h3>
-            <p>Monitor your business performance in real-time with customizable dashboards and reports.</p>
+    </section>
+
+    <hr>
+
+    <!-- ===== TESTIMONIALS ===== -->
+    <section class="testimonials-content">
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <blockquote>"OneTech transformed our business completely. Their AI-powered analytics helped us make data-driven decisions that increased our revenue by 40%."</blockquote>
+                <div class="author">
+                    <div class="avatar">JD</div>
+                    <div>
+                        <div class="name">John Doe</div>
+                        <div class="role">CEO, TechStart Inc.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <blockquote>"The cloud infrastructure solutions provided by OneTech are second to none. Our systems have never been more reliable and scalable."</blockquote>
+                <div class="author">
+                    <div class="avatar">JS</div>
+                    <div>
+                        <div class="name">Jane Smith</div>
+                        <div class="role">CTO, CloudCorp</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <blockquote>"The support team at OneTech is outstanding. They're always available and ready to help with any issues we encounter. Highly recommended!"</blockquote>
+                <div class="author">
+                    <div class="avatar">MR</div>
+                    <div>
+                        <div class="name">Mike Roberts</div>
+                        <div class="role">IT Director, GlobalTech</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <blockquote>"OneTech's solutions helped us reduce our operational costs by 30% while improving our service quality. Absolutely game-changing!"</blockquote>
+                <div class="author">
+                    <div class="avatar">AL</div>
+                    <div>
+                        <div class="name">Anna Lee</div>
+                        <div class="role">COO, FinTech Solutions</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <blockquote>"The team at OneTech understands our needs and delivers solutions that exceed expectations. We couldn't ask for a better partner."</blockquote>
+                <div class="author">
+                    <div class="avatar">DR</div>
+                    <div>
+                        <div class="name">David Rodriguez</div>
+                        <div class="role">VP of Technology, HealthTech</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <blockquote>"Working with OneTech has been a pleasure from start to finish. Their expertise and professionalism are unmatched."</blockquote>
+                <div class="author">
+                    <div class="avatar">SM</div>
+                    <div>
+                        <div class="name">Sarah Miller</div>
+                        <div class="role">Director of Innovation, EduTech</div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="icon">🌐</div>
-            <h3>Global Network</h3>
-            <p>Deploy your applications across multiple regions with our global network of data centers.</p>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="brand">
+                <a href="/" class="logo">One<span>Tech</span></a>
+                <p>Your trusted partner in technology solutions. Innovating for a better tomorrow.</p>
+            </div>
+            <div>
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/">Accueil</a></li>
+                    <li><a href="/about">About Us</a></li>
+                    <li><a href="/Leave">Holidays</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Services</h4>
+                <ul>
+                    <li><a href="/services">Cloud Solutions</a></li>
+                    <li><a href="/services">AI &amp; Analytics</a></li>
+                    <li><a href="/services">Security</a></li>
+                    <li><a href="/services">Consulting</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="/contact">Help Center</a></li>
+                    <li><a href="/contact">Documentation</a></li>
+                    <li><a href="/contact">API Reference</a></li>
+                    <li><a href="/contact">Status</a></li>
+                </ul>
+            </div>
+
+            <div class="bottom">
+                <div class="copyright">
+                    &copy; 2026 OneTech. All rights reserved.
+                </div>
+                <div class="social">
+                    <a href="#" title="Twitter">🐦</a>
+                    <a href="#" title="LinkedIn">🔗</a>
+                    <a href="#" title="GitHub">🐙</a>
+                    <a href="#" title="YouTube">📺</a>
+                </div>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="icon">💬</div>
-            <h3>24/7 Support</h3>
-            <p>Our expert team is always available to help you with any questions or issues you may have.</p>
+    </footer>
+
+    <!-- ===== AI CHAT BUBBLE ===== -->
+    <div class="chat-bubble" id="chatBubble">
+        <button class="chat-toggle" id="chatToggle" onclick="toggleChat()">
+            <span class="chat-icon">💬</span>
+            <span class="close-icon">✕</span>
+        </button>
+
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div class="avatar">🤖</div>
+                <div class="info">
+                    <div class="name">OneTech Assistant</div>
+                    <div class="status">
+                        <span class="status-dot"></span> Online
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="bubble">
+                        👋 Hello! I'm the OneTech AI Assistant.<br>
+                        How can I help you today?
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-replies">
+                <button class="quick-reply-btn" onclick="sendQuickReply('What services do you offer?')">Services</button>
+                <button class="quick-reply-btn" onclick="sendQuickReply('How do I create an account?')">Create Account</button>
+                <button class="quick-reply-btn" onclick="sendQuickReply('Tell me about your support')">Support</button>
+                <button class="quick-reply-btn" onclick="sendQuickReply('What is OneTech?')">About OneTech</button>
+            </div>
+
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Ask me anything..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" id="sendBtn">Send</button>
+            </div>
         </div>
     </div>
-</section>
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="copyright">
-        &copy; 2026 OneTech. All rights reserved.
-    </div>
-    <div class="links">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-        <a href="#">Contact Us</a>
-    </div>
-</footer>
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // ===== TOGGLE SIDEBAR =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const profileBtn = document.getElementById('profileBtn');
+            
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+            if (overlay) {
+                overlay.classList.toggle('open');
+            }
+            if (profileBtn) {
+                profileBtn.classList.toggle('active');
+            }
+            
+            document.body.style.overflow = (sidebar && sidebar.classList.contains('open')) ? 'hidden' : '';
+        }
 
-<!-- IE11 conditional comment for polyfills -->
-<!--[if lt IE 10]>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
-<![endif]-->
+        // ===== TOGGLE MOBILE MENU =====
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            if (navLinks) {
+                navLinks.classList.toggle('open');
+            }
+        }
+
+        // ===== TOGGLE CHAT =====
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatToggle = document.getElementById('chatToggle');
+            
+            if (chatWindow) {
+                chatWindow.classList.toggle('open');
+            }
+            if (chatToggle) {
+                chatToggle.classList.toggle('active');
+            }
+            
+            if (chatWindow && chatWindow.classList.contains('open')) {
+                setTimeout(() => {
+                    const input = document.getElementById('chatInput');
+                    if (input) input.focus();
+                }, 300);
+            }
+        }
+
+        // ===== SEND MESSAGE =====
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const messages = document.getElementById('chatMessages');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            if (!input || !messages) return;
+            
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addMessage('user', message);
+            input.value = '';
+            if (sendBtn) sendBtn.disabled = true;
+            
+            showTyping();
+            
+            fetch('/assistant/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: message })
+            })
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.answer || 'Unexpected error');
+                }
+                removeTyping();
+                addMessage('bot', data.answer || 'I could not generate an answer right now.');
+                if (sendBtn) sendBtn.disabled = false;
+                scrollToBottom();
+            })
+            .catch(error => {
+                removeTyping();
+                addMessage('bot', 'I am having trouble reaching the assistant right now. Please try again in a moment.');
+                if (sendBtn) sendBtn.disabled = false;
+                scrollToBottom();
+                console.error(error);
+            });
+        }
+
+        function sendQuickReply(text) {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.value = text;
+                sendMessage();
+            }
+        }
+
+        function addMessage(type, text) {
+            const messages = document.getElementById('chatMessages');
+            if (!messages) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.textContent = text;
+            
+            messageDiv.appendChild(bubble);
+            messages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            const messages = document.getElementById('chatMessages');
+            if (!messages) return;
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            
+            const dots = document.createElement('div');
+            dots.className = 'typing-dots';
+            dots.innerHTML = '<span></span><span></span><span></span>';
+            
+            bubble.appendChild(dots);
+            typingDiv.appendChild(bubble);
+            messages.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function removeTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) {
+                typing.remove();
+            }
+        }
+
+        function scrollToBottom() {
+            const messages = document.getElementById('chatMessages');
+            if (messages) {
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        // ===== AI RESPONSE LOGIC =====
+        function getAIResponse(message) {
+            const msg = message.toLowerCase();
+            
+            if (msg.includes('service') || msg.includes('offer') || msg.includes('provide')) {
+                return "🚀 OneTech offers a comprehensive range of technology services including:\n\n• Cloud Infrastructure & Hosting\n• AI-Powered Analytics & Insights\n• Enterprise-Grade Security Solutions\n• Real-Time Data Processing\n• Global Network Deployment\n• 24/7 Technical Support\n\nWhich service are you most interested in?";
+            }
+            
+            if (msg.includes('account') || msg.includes('sign up') || msg.includes('register') || msg.includes('create')) {
+                return "📝 Creating an account with OneTech is easy!\n\n1. Click the 'Get Started' button in the top right\n2. Fill in your details (name, email, password)\n3. Verify your email address\n4. Start exploring our platform\n\nWould you like me to guide you through the process?";
+            }
+            
+            if (msg.includes('support') || msg.includes('help') || msg.includes('assist')) {
+                return "💬 Our support team is always here to help!\n\n• 24/7 Live Chat Support\n• Email: support@onetech.com\n• Phone: +1 (555) 123-4567\n• Knowledge Base & Documentation\n\nHow can we assist you today?";
+            }
+            
+            if (msg.includes('about') || msg.includes('what is') || msg.includes('who is')) {
+                return "🌟 OneTech is a leading technology solutions provider dedicated to helping businesses succeed in the digital age.\n\nWe specialize in:\n• Cutting-edge cloud infrastructure\n• AI and machine learning solutions\n• Enterprise security\n• Business analytics\n\nOur mission is to empower organizations with innovative technology that drives growth and efficiency.";
+            }
+            
+            if (msg.includes('price') || msg.includes('cost') || msg.includes('pricing') || msg.includes('plan')) {
+                return "💰 OneTech offers flexible pricing plans to suit businesses of all sizes:\n\n• Starter: $29/month - Basic features\n• Professional: $99/month - Advanced tools\n• Enterprise: Custom pricing - Full suite\n\nAll plans include a 14-day free trial. Would you like to see a detailed comparison?";
+            }
+            
+            if (msg.includes('security') || msg.includes('secure') || msg.includes('protection')) {
+                return "🔒 Security is our top priority at OneTech.\n\nWe provide:\n• End-to-end encryption\n• SOC 2 Type II compliance\n• Regular security audits\n• Multi-factor authentication\n• GDPR & HIPAA compliance\n\nYour data is always safe with us!";
+            }
+            
+            if (msg.includes('integrate') || msg.includes('integration') || msg.includes('api')) {
+                return "🔌 OneTech seamlessly integrates with your existing tools:\n\n• Popular CRMs (Salesforce, HubSpot)\n• Communication tools (Slack, Teams)\n• Analytics platforms (Google Analytics)\n• Custom API integration\n\nNeed help with a specific integration? Let me know!";
+            }
+            
+            if (msg.includes('hello') || msg.includes('hi ') || msg.includes('hey') || msg.includes('greeting')) {
+                return "👋 Hello there! Welcome to OneTech!\n\nI'm your AI assistant, here to help you learn more about our platform. Feel free to ask me about:\n• Our services\n• Creating an account\n• Pricing plans\n• Support options\n\nWhat would you like to know?";
+            }
+            
+            return "🤔 Great question! Here are some topics I can help with:\n\n• Services & Features\n• Account Creation\n• Pricing Plans\n• Security & Compliance\n• Support & Assistance\n• Integrations\n\nJust ask me about any of these!";
+        }
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar && sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                    if (overlay) overlay.classList.remove('open');
+                    document.body.style.overflow = '';
+                    const profileBtn = document.getElementById('profileBtn');
+                    if (profileBtn) profileBtn.classList.remove('active');
+                }
+            }
+        });
+
+        // ===== CLOSE MOBILE MENU ON RESIZE =====
+        window.addEventListener('resize', function() {
+            const navLinks = document.getElementById('navLinks');
+            if (window.innerWidth > 768 && navLinks && navLinks.classList.contains('open')) {
+                navLinks.classList.remove('open');
+            }
+        });
+
+        // ===== CLOSE MOBILE MENU ON LINK CLICK =====
+        document.querySelectorAll('#navLinks a').forEach(link => {
+            link.addEventListener('click', function() {
+                const navLinks = document.getElementById('navLinks');
+                if (window.innerWidth <= 768 && navLinks) {
+                    navLinks.classList.remove('open');
+                }
+            });
+        });
+
+        // ===== CHAT INPUT ENTER KEY =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

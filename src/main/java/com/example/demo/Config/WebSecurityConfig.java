@@ -1,142 +1,123 @@
 package com.example.demo.Config;
 
-import com.example.demo.Entity.UserAccount;
-import com.example.demo.Service.UserService;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.example.demo.Entity.employees;
+import com.example.demo.Service.EmployeeDetailsServiceImpl;
+import com.example.demo.Service.EmployeeService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.io.IOException;
+import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
 
     @Autowired
-    private UserService userService;
+    private EmployeeDetailsServiceImpl employeeDetailsService;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    @Autowired
+    private EmployeeService employeeService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF for testing
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/auth/**")
-                .disable()
-            )
-            
-            // Configure URL authorization
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints - no authentication required
-                .requestMatchers("/", "/signin", "/signup", "/create-test-user").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/css/**", "/js/**", "/image/**", "/images/**", "/webjars/**").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
-                
-                // Dashboard requires authentication
-                .requestMatchers("/dashboard").authenticated()
-                .requestMatchers("/profile").authenticated()
-                .requestMatchers("/settings").authenticated()
-                
-                // Admin endpoints
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                
-                // All other requests require authentication
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/", "/Home", "/accueil", "/about", "/holidays", 
+                                "/testimonials", "/services", "/contact", "/signin", 
+                                "/signup", "/register", "/api/auth/**").permitAll()
+                .requestMatchers("/dashboard/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**", 
+                               "/webjars/**", "/favicon.ico").permitAll()
                 .anyRequest().authenticated()
             )
-            
-            // Configure login with custom success handler
+            .exceptionHandling(exception -> exception
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.sendRedirect("/");
+                })
+            )
             .formLogin(form -> form
                 .loginPage("/signin")
                 .loginProcessingUrl("/signin")
-                .successHandler(customAuthenticationSuccessHandler())  // Custom success handler
+                .successHandler(successHandler())
                 .failureUrl("/signin?error=true")
-                .usernameParameter("email")
-                .passwordParameter("password")
                 .permitAll()
             )
-            
-            // Configure logout
             .logout(logout -> logout
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutUrl("/signout")
                 .logoutSuccessUrl("/signin?logout=true")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             )
-            
-            // Remember me
             .rememberMe(remember -> remember
                 .key("uniqueAndSecret")
                 .tokenValiditySeconds(86400)
-                .rememberMeParameter("remember-me")
-            )
-            
-            // Session management
-            .sessionManagement(session -> session
-                .maximumSessions(1)
-                .expiredUrl("/signin?expired=true")
-                .maxSessionsPreventsLogin(false)
-            )
-            
-            // Exception handling
-            .exceptionHandling(exception -> exception
-                .accessDeniedPage("/access-denied")
+                .userDetailsService(employeeDetailsService)
             );
 
         return http.build();
     }
 
     @Bean
-    public AuthenticationSuccessHandler customAuthenticationSuccessHandler() {
-        return new AuthenticationSuccessHandler() {
-            @Override
-            public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
-                                                Authentication authentication) throws IOException, ServletException {
-                System.out.println("=== Authentication Success Handler called ===");
-                
-                // Get the authenticated user's email
-                String email = authentication.getName();
-                System.out.println("Authenticated email: " + email);
-                
-                // Get the user from database
-                UserAccount user = userService.getUserByEmail(email);
-                System.out.println("User found: " + (user != null ? user.getUsername() : "null"));
-                
-                if (user != null) {
-                    // Update login information
-                    userService.updateUserLoginInfo(user);
-                    
-                    // Set session attributes
-                    request.getSession().setAttribute("user", user);
-                    request.getSession().setAttribute("username", user.getUsername());
-                    request.getSession().setAttribute("email", user.getEmail());
-                    request.getSession().setAttribute("userId", user.getId());
-                    request.getSession().setAttribute("firstName", user.getFirst_name());
-                    request.getSession().setAttribute("lastName", user.getLast_name());
-                    
-                    System.out.println("Session attributes set for user: " + user.getUsername());
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(employeeDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler successHandler() {
+        return (request, response, authentication) -> {
+            String email = authentication.getName();
+            Optional<employees> employeeOpt = employeeService.findByEmail(email);
+
+            if (employeeOpt.isPresent()) {
+                employees employee = employeeOpt.get();
+                HttpSession session = request.getSession();
+                session.setAttribute("employee", employee);
+                session.setAttribute("employeeId", employee.getId());
+                session.setAttribute("nickname", employee.getNickname());
+                session.setAttribute("email", employee.getEmail());
+                session.setAttribute("firstName", employee.getFirst_name());
+                session.setAttribute("lastName", employee.getLast_name());
+                session.setAttribute("mobile", employee.getMobile());
+                session.setAttribute("empCode", employee.getEmp_code());
+                session.setAttribute("appRole", employee.getApp_role());
+                session.setAttribute("isActive", employee.isIs_active());
+
+                if (employee.getApp_role() != null && (employee.getApp_role() == 1 || employee.getApp_role() == 2 || employee.getApp_role() == 3)) {
+                    response.sendRedirect("/dashboard");
+                } else {
+                    response.sendRedirect("/");
                 }
-                
-                // Redirect to dashboard
-                response.sendRedirect("/dashboard");
+                return;
             }
+
+            response.sendRedirect("/");
         };
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

@@ -1,148 +1,1057 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Edit User</title>
+    <title>Edit Employee</title>
+    <style>
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            grid-column: 1 / -1;
+        }
+        .form-section-title {
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            font-size: 1rem;
+            color: #1a1a2e;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .form-hint {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        .optional-badge {
+            font-size: 0.7rem;
+            color: #6c757d;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+        .required-star {
+            color: #ef4444;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group input,
+        .form-group select {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            background: #ffffff;
+            color: #1a1a2e;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'Inter', Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2f79ff;
+            box-shadow: 0 0 0 3px rgba(47, 121, 255, 0.1);
+        }
+        .form-group input[type="file"] {
+            display: none;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 0.8s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .btn-loading .spinner {
+            display: inline-block;
+        }
+        .btn-loading .btn-text {
+            display: none;
+        }
+
+        /* ===== PROFILE PHOTO STYLES ===== */
+        .profile-photo-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            grid-column: 1 / -1;
+        }
+
+        .profile-photo-wrapper:hover {
+            border-color: #2f79ff;
+            box-shadow: 0 2px 8px rgba(47, 121, 255, 0.1);
+        }
+
+        .profile-photo-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #e9ecef;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .profile-photo-circle:hover {
+            border-color: #2f79ff;
+        }
+
+        .profile-photo-circle.has-image {
+            border-color: #2f79ff;
+        }
+
+        .profile-photo-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-photo-circle .placeholder-icon {
+            font-size: 3.5rem;
+            color: #adb5bd;
+        }
+
+        .profile-photo-circle .upload-hint-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(47, 121, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 50%;
+        }
+
+        .profile-photo-circle:hover .upload-hint-overlay {
+            opacity: 1;
+        }
+
+        .profile-photo-circle .upload-hint-overlay span {
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .profile-photo-info {
+            text-align: center;
+        }
+
+        .profile-photo-info .photo-name {
+            font-weight: 600;
+            color: #1a1a2e;
+            font-size: 0.95rem;
+        }
+
+        .profile-photo-info .photo-name.empty {
+            color: #6c757d;
+            font-weight: 400;
+        }
+
+        .profile-photo-info .photo-size {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .profile-photo-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .profile-photo-status-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .profile-photo-status-badge.current {
+            background: #e8f4fd;
+            color: #2f79ff;
+        }
+
+        .profile-photo-status-badge.new {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .profile-photo-status-badge.empty {
+            background: #f1f3f5;
+            color: #6c757d;
+        }
+
+        .profile-photo-status-badge.removed {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-remove-photo {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #fecaca;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .btn-remove-photo:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .upload-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            padding: 4px 0;
+            justify-content: center;
+        }
+
+        .upload-status.success {
+            color: #16a34a;
+        }
+
+        .upload-status.error {
+            color: #ef4444;
+        }
+
+        .upload-status .status-icon {
+            font-size: 1rem;
+        }
+
+        /* ===== DRIVING LICENSE SQUARE STYLES ===== */
+        .photo-upload-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .photo-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-preview-container:hover {
+            border-color: #2f79ff;
+            box-shadow: 0 2px 8px rgba(47, 121, 255, 0.1);
+        }
+
+        .photo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-preview:hover {
+            border-color: #2f79ff;
+        }
+
+        .photo-preview.has-image {
+            border-color: #2f79ff;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-preview .placeholder-icon {
+            font-size: 2.5rem;
+            color: #adb5bd;
+        }
+
+        .photo-preview .badge-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 0.6rem;
+            padding: 3px 0;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .photo-preview .upload-hint-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(47, 121, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .photo-preview:hover .upload-hint-overlay {
+            opacity: 1;
+        }
+
+        .photo-preview .upload-hint-overlay span {
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .photo-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .photo-info .photo-name {
+            font-weight: 600;
+            color: #1a1a2e;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .photo-info .photo-name.empty {
+            color: #6c757d;
+            font-weight: 400;
+        }
+
+        .photo-info .photo-size {
+            color: #6c757d;
+            font-size: 0.75rem;
+        }
+
+        .photo-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .photo-status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .photo-status-badge.current {
+            background: #e8f4fd;
+            color: #2f79ff;
+        }
+
+        .photo-status-badge.new {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .photo-status-badge.empty {
+            background: #f1f3f5;
+            color: #6c757d;
+        }
+
+        .photo-status-badge.removed {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .profile-photo-circle {
+                width: 100px;
+                height: 100px;
+            }
+            .photo-preview {
+                width: 60px;
+                height: 60px;
+            }
+            .photo-preview-container {
+                flex-wrap: wrap;
+            }
+            .photo-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
 </head>
 <body>
     <div th:fragment="content">
-        <!-- Page Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <div>
-                <h2 style="font-family: 'Space Grotesk', Arial, sans-serif; font-size: 1.8rem; margin-bottom: 4px; color: #1a1a2e;">Edit User</h2>
-                <p style="color: #6c757d;">Update user information and account settings</p>
+        <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 20px; padding: 32px; max-width: 1000px; margin: 0 auto;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid #e9ecef;">
+                <h2 style="font-family: 'Space Grotesk', Arial, sans-serif; font-size: 1.4rem; color: #1a1a2e; display: flex; align-items: center; gap: 12px;">
+                    <svg width="28" height="28" fill="none" stroke="#2f79ff" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    Edit Employee
+                </h2>
+                <a href="/dashboard/Employees" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 10px; color: #6c757d; text-decoration: none; font-weight: 500; font-size: 0.9rem; border: 1px solid #e9ecef; background: #ffffff;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Back to List
+                </a>
             </div>
-            <a href="/dashboard/Users" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 10px; color: #6c757d; text-decoration: none; font-weight: 500; font-size: 0.9rem; border: 1px solid #e9ecef; background: #ffffff;">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+
+            <div th:if="${error}" style="padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 500; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                Back to List
-            </a>
-        </div>
+                <span th:text="${error}"></span>
+            </div>
 
-        <!-- Error Alert -->
-        <div th:if="${error}" style="padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 500; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span th:text="${error}"></span>
-        </div>
+            <div th:if="${success}" style="padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 500; background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span th:text="${success}"></span>
+            </div>
 
-        <!-- Success Alert -->
-        <div th:if="${success}" style="padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 500; background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span th:text="${success}"></span>
-        </div>
+            <form id="editEmployeeForm" th:action="'/dashboard/employees/update/' + ${employee.id}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="id" th:value="${employee.id}" />
 
-        <!-- Edit Form -->
-        <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 16px; padding: 32px;">
-            <form th:action="@{'/dashboard/users/update/' + ${user.id}}" method="post">
-                <!-- Hidden field for user ID -->
-                <input type="hidden" name="id" th:value="${user.id}" />
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <!-- First Name -->
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">First Name <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="first_name" th:value="${user.first_name}" placeholder="Enter first name" required style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif; transition: border-color 0.2s ease, box-shadow 0.2s ease;">
-                    </div>
-
-                    <!-- Last Name -->
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Last Name <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="last_name" th:value="${user.last_name}" placeholder="Enter last name" required style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                    </div>
-
-                    <!-- Email -->
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Email <span style="color: #ef4444;">*</span></label>
-                        <input type="email" name="email" th:value="${user.email}" placeholder="example@email.com" required style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                    </div>
-
-                    <!-- Phone -->
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Phone</label>
-                        <input type="text" name="tele_phone" th:value="${user.gettele_phone()}" placeholder="Phone number" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                        <span style="font-size: 0.7rem; color: #6c757d;">Format: 1234567890</span>
-                    </div>
-
-                    <!-- Username -->
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Username <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="username" th:value="${user.username}" placeholder="Enter username" required style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                    </div>
-
-                    <!-- Password (Optional) -->
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">New Password</label>
-                        <input type="password" name="password" placeholder="Leave empty to keep current password" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                        <span style="font-size: 0.7rem; color: #6c757d;">Leave empty to keep current password</span>
-                    </div>
-
-                    <!-- Confirm Password -->
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Confirm New Password</label>
-                        <input type="password" name="confirm_password" placeholder="Confirm new password" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                    </div>
-
-                    <!-- Role -->
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Role</label>
-                        <select name="role" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                            <option value="user" th:selected="${!user.is_superuser}">User</option>
-                            <option value="admin" th:selected="${user.is_superuser}">Administrator</option>
-                            <option value="staff" th:selected="${user.is_staff}">Staff</option>
-                        </select>
-                    </div>
-
-                    <!-- Status -->
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Status</label>
-                        <select name="is_active" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                            <option value="true" th:selected="${user.is_active}">Active</option>
-                            <option value="false" th:selected="${!user.is_active}">Inactive</option>
-                        </select>
-                    </div>
-
-                    <!-- Advanced Options -->
-                    <div style="grid-column: 1 / -1; margin-top: 8px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 0;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <input type="checkbox" name="is_staff" id="is_staff" th:checked="${user.is_staff}" style="width: 18px; height: 18px; cursor: pointer; accent-color: #2f79ff;" />
-                                <label for="is_staff" style="font-weight: 500; font-size: 0.9rem; color: #1a1a2e; cursor: pointer;">Staff</label>
-                                <span style="font-size: 0.7rem; color: #6c757d;">(Limited admin access)</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <input type="checkbox" name="is_superuser" id="is_superuser" th:checked="${user.is_superuser}" style="width: 18px; height: 18px; cursor: pointer; accent-color: #2f79ff;" />
-                                <label for="is_superuser" style="font-weight: 500; font-size: 0.9rem; color: #1a1a2e; cursor: pointer;">Superuser</label>
-                                <span style="font-size: 0.7rem; color: #6c757d;">(All permissions)</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <input type="checkbox" name="is_public" id="is_public" th:checked="${user.is_public}" style="width: 18px; height: 18px; cursor: pointer; accent-color: #2f79ff;" />
-                                <label for="is_public" style="font-weight: 500; font-size: 0.9rem; color: #1a1a2e; cursor: pointer;">Public</label>
-                                <span style="font-size: 0.7rem; color: #6c757d;">(Visible profile)</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <input type="checkbox" name="can_manage_all_dept" id="can_manage_all_dept" th:checked="${user.can_manage_all_dept}" style="width: 18px; height: 18px; cursor: pointer; accent-color: #2f79ff;" />
-                                <label for="can_manage_all_dept" style="font-weight: 500; font-size: 0.9rem; color: #1a1a2e; cursor: pointer;">Manage All Departments</label>
-                            </div>
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <div class="form-section-title">👤 Personal Information</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name <span class="required-star">*</span></label>
+                            <input type="text" name="first_name" th:value="${employee.first_name}" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name <span class="required-star">*</span></label>
+                            <input type="text" name="last_name" th:value="${employee.last_name}" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Nickname <span class="optional-badge">(Optional)</span></label>
+                            <input type="text" name="nickname" th:value="${employee.nickname}" />
+                        </div>
+                        <div class="form-group">
+                            <label>Gender <span class="optional-badge">(Optional)</span></label>
+                            <select name="gender">
+                                <option value="">Select Gender</option>
+                                <option value="Male" th:selected="${employee.gender == 'Male'}">Male</option>
+                                <option value="Female" th:selected="${employee.gender == 'Female'}">Female</option>
+                                <option value="Other" th:selected="${employee.gender == 'Other'}">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Birthday <span class="optional-badge">(Optional)</span></label>
+                            <input type="date" name="birthday" th:value="${employee.birthday}" />
                         </div>
                     </div>
                 </div>
 
-                <!-- Form Actions -->
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <div class="form-section-title">📞 Contact Information</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email <span class="required-star">*</span></label>
+                            <input type="email" name="email" th:value="${employee.email}" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Mobile <span class="optional-badge">(Optional)</span></label>
+                            <input type="tel" name="mobile" th:value="${employee.mobile}" />
+                            <span class="form-hint">Format: 1234567890</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Office Tel <span class="optional-badge">(Optional)</span></label>
+                            <input type="tel" name="office_tel" th:value="${employee.office_tel}" />
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Tel <span class="optional-badge">(Optional)</span></label>
+                            <input type="tel" name="contact_tel" th:value="${employee.contact_tel}" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nationality & Religion -->
+                <div class="form-section">
+                    <div class="form-section-title">🌍 Nationality & Religion</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nationality <span class="optional-badge">(Optional)</span></label>
+                            <input type="text" name="national" th:value="${employee.national}" />
+                        </div>
+                        <div class="form-group">
+                            <label>Religion <span class="optional-badge">(Optional)</span></label>
+                            <input type="text" name="religion" th:value="${employee.religion}" />
+                        </div>
+                        <div class="form-group">
+                            <label>City <span class="optional-badge">(Optional)</span></label>
+                            <input type="text" name="city" th:value="${employee.city}" />
+                        </div>
+                        <div class="form-group">
+                            <label>Title <span class="optional-badge">(Optional)</span></label>
+                            <input type="text" name="title" th:value="${employee.title}" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== PROFILE PHOTO - Circular Design ===== -->
+                <div class="form-section">
+                    <div class="form-section-title">📸 Profile Photo</div>
+                    <div class="profile-photo-wrapper" onclick="document.getElementById('profilePhotoInput').click()">
+                        <input type="file" name="photo" accept="image/*" id="profilePhotoInput" />
+                        
+                        <!-- Circular Photo Preview -->
+                        <div class="profile-photo-circle" id="profilePhotoPreview"
+                             th:classappend="${employee.photo != null and employee.photo != ''} ? 'has-image' : ''">
+                            <img th:if="${employee.photo != null and employee.photo != ''}" 
+                                 th:src="'/uploads/' + ${employee.photo}" 
+                                 th:alt="${employee.photo}"
+                                 onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder-icon').style.display='flex';" />
+                            <span th:if="${employee.photo == null or employee.photo == ''}" 
+                                  class="placeholder-icon">👤</span>
+                            <div class="upload-hint-overlay">
+                                <span th:text="${employee.photo != null and employee.photo != ''} ? 'Click to change' : 'Click to upload'"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Info -->
+                        <div class="profile-photo-info">
+                            <span class="photo-name" 
+                                  th:classappend="${employee.photo == null or employee.photo == ''} ? 'empty' : ''" 
+                                  th:text="${employee.photo != null and employee.photo != '' ? employee.photo : 'No photo uploaded'}"></span>
+                            <br>
+                            <span class="photo-size">Optional. Upload a profile picture for better identification.</span>
+                            <div class="profile-photo-actions">
+                                <span th:if="${employee.photo != null and employee.photo != ''}" 
+                                      class="profile-photo-status-badge current">Current</span>
+                                <span th:if="${employee.photo == null or employee.photo == ''}" 
+                                      class="profile-photo-status-badge empty">Empty</span>
+                                <button type="button" class="btn-remove-photo" onclick="event.stopPropagation(); removeProfilePhoto()">✕ Remove</button>
+                            </div>
+                        </div>
+                        <div id="profilePhotoStatus" class="upload-status" style="display: none;">
+                            <span class="status-icon">✅</span>
+                            <span>File selected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== DRIVING LICENSE & SECURITY ===== -->
+                <div class="form-section">
+                    <div class="form-section-title">🚗 Driving License & Security</div>
+                    <div class="form-row">
+                        <!-- Driver License (Auto) -->
+                        <div class="form-group">
+                            <label>Driver License (Auto) <span class="optional-badge">(Optional)</span></label>
+                            <div class="photo-upload-wrapper">
+                                <input type="file" name="driver_license_automobile" accept="image/*" id="licenseAuto" />
+                                <span class="form-hint">Click the image to upload</span>
+                                
+                                <div class="photo-preview-container" id="licenseAutoPreviewContainer" onclick="document.getElementById('licenseAuto').click()">
+                                    <div class="photo-preview" id="licenseAutoPreview"
+                                         th:classappend="${employee.driver_license_automobile != null and employee.driver_license_automobile != ''} ? 'has-image' : ''">
+                                        <img th:if="${employee.driver_license_automobile != null and employee.driver_license_automobile != ''}" 
+                                             th:src="'/uploads/' + ${employee.driver_license_automobile}" 
+                                             th:alt="${employee.driver_license_automobile}"
+                                             onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder-icon').style.display='flex';" />
+                                        <span th:if="${employee.driver_license_automobile == null or employee.driver_license_automobile == ''}" 
+                                              class="placeholder-icon">📄</span>
+                                        <div th:if="${employee.driver_license_automobile != null and employee.driver_license_automobile != ''}" 
+                                             class="badge-overlay">Current</div>
+                                        <div class="upload-hint-overlay">
+                                            <span th:text="${employee.driver_license_automobile != null and employee.driver_license_automobile != ''} ? 'Click to change' : 'Click to upload'"></span>
+                                        </div>
+                                    </div>
+                                    <div class="photo-info">
+                                        <span class="photo-name" 
+                                              th:classappend="${employee.driver_license_automobile == null or employee.driver_license_automobile == ''} ? 'empty' : ''" 
+                                              th:text="${employee.driver_license_automobile != null and employee.driver_license_automobile != '' ? employee.driver_license_automobile : 'No license uploaded'}"></span>
+                                        <span class="photo-size" 
+                                              th:text="${employee.driver_license_automobile != null and employee.driver_license_automobile != '' ? 'Click to change' : 'Click to upload'}"></span>
+                                        <div class="photo-actions">
+                                            <span th:if="${employee.driver_license_automobile != null and employee.driver_license_automobile != ''}" 
+                                                  class="photo-status-badge current">Current</span>
+                                            <span th:if="${employee.driver_license_automobile == null or employee.driver_license_automobile == ''}" 
+                                                  class="photo-status-badge empty">Empty</span>
+                                            <button type="button" class="btn-remove-photo" onclick="event.stopPropagation(); removePhoto('licenseAuto')">✕ Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="licenseAutoStatus" class="upload-status" style="display: none;">
+                                    <span class="status-icon">✅</span>
+                                    <span>File selected</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Driver License (Motorcycle) -->
+                        <div class="form-group">
+                            <label>Driver License (Motorcycle) <span class="optional-badge">(Optional)</span></label>
+                            <div class="photo-upload-wrapper">
+                                <input type="file" name="driver_license_motorcycle" accept="image/*" id="licenseMotor" />
+                                <span class="form-hint">Click the image to upload</span>
+                                
+                                <div class="photo-preview-container" id="licenseMotorPreviewContainer" onclick="document.getElementById('licenseMotor').click()">
+                                    <div class="photo-preview" id="licenseMotorPreview"
+                                         th:classappend="${employee.driver_license_motorcycle != null and employee.driver_license_motorcycle != ''} ? 'has-image' : ''">
+                                        <img th:if="${employee.driver_license_motorcycle != null and employee.driver_license_motorcycle != ''}" 
+                                             th:src="'/uploads/' + ${employee.driver_license_motorcycle}" 
+                                             th:alt="${employee.driver_license_motorcycle}"
+                                             onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder-icon').style.display='flex';" />
+                                        <span th:if="${employee.driver_license_motorcycle == null or employee.driver_license_motorcycle == ''}" 
+                                              class="placeholder-icon">📄</span>
+                                        <div th:if="${employee.driver_license_motorcycle != null and employee.driver_license_motorcycle != ''}" 
+                                             class="badge-overlay">Current</div>
+                                        <div class="upload-hint-overlay">
+                                            <span th:text="${employee.driver_license_motorcycle != null and employee.driver_license_motorcycle != ''} ? 'Click to change' : 'Click to upload'"></span>
+                                        </div>
+                                    </div>
+                                    <div class="photo-info">
+                                        <span class="photo-name" 
+                                              th:classappend="${employee.driver_license_motorcycle == null or employee.driver_license_motorcycle == ''} ? 'empty' : ''" 
+                                              th:text="${employee.driver_license_motorcycle != null and employee.driver_license_motorcycle != '' ? employee.driver_license_motorcycle : 'No license uploaded'}"></span>
+                                        <span class="photo-size" 
+                                              th:text="${employee.driver_license_motorcycle != null and employee.driver_license_motorcycle != '' ? 'Click to change' : 'Click to upload'}"></span>
+                                        <div class="photo-actions">
+                                            <span th:if="${employee.driver_license_motorcycle != null and employee.driver_license_motorcycle != ''}" 
+                                                  class="photo-status-badge current">Current</span>
+                                            <span th:if="${employee.driver_license_motorcycle == null or employee.driver_license_motorcycle == ''}" 
+                                                  class="photo-status-badge empty">Empty</span>
+                                            <button type="button" class="btn-remove-photo" onclick="event.stopPropagation(); removePhoto('licenseMotor')">✕ Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="licenseMotorStatus" class="upload-status" style="display: none;">
+                                    <span class="status-icon">✅</span>
+                                    <span>File selected</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Device Password -->
+                        <div class="form-group">
+                            <label>Device Password <span class="optional-badge">(Optional)</span></label>
+                            <input type="password" name="device_password" placeholder="Leave empty to keep current" />
+                            <span class="form-hint">Leave empty to keep current password</span>
+                        </div>
+
+                        <!-- Self Password -->
+                        <div class="form-group">
+                            <label>Self Password <span class="optional-badge">(Optional)</span></label>
+                            <input type="password" name="self_password" placeholder="Leave empty to keep current" />
+                            <span class="form-hint">Leave empty to keep current password</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employment Details -->
+                <div class="form-section">
+                    <div class="form-section-title">💼 Employment Details</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Status <span class="required-star">*</span></label>
+                            <select name="status" required>
+                                <option value="1" th:selected="${employee.status == 1}">Active</option>
+                                <option value="0" th:selected="${employee.status == 0}">Inactive</option>
+                                <option value="2" th:selected="${employee.status == 2}">On Leave</option>
+                                <option value="3" th:selected="${employee.status == 3}">Terminated</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Employee Type <span class="optional-badge">(Optional)</span></label>
+                            <select name="emp_type">
+                                <option value="">Select Type</option>
+                                <option value="1" th:selected="${employee.emp_type == 1}">Full Time</option>
+                                <option value="2" th:selected="${employee.emp_type == 2}">Part Time</option>
+                                <option value="3" th:selected="${employee.emp_type == 3}">Contractor</option>
+                                <option value="4" th:selected="${employee.emp_type == 4}">Intern</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Hire Date <span class="optional-badge">(Optional)</span></label>
+                            <input type="date" name="hire_date" th:value="${employee.hire_date}" />
+                        </div>
+                        <div class="form-group">
+                            <label>App Role <span class="optional-badge">(Optional)</span></label>
+                            <select name="app_role">
+                                <option value="">Select Role</option>
+                                <option value="1" th:selected="${employee.app_role == 1}">Administrator</option>
+                                <option value="2" th:selected="${employee.app_role == 2}">Manager</option>
+                                <option value="3" th:selected="${employee.app_role == 3}">Staff</option>
+                                <option value="4" th:selected="${employee.app_role == 4}">User</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Department <span class="optional-badge">(Optional)</span></label>
+                            <select name="department_id">
+                                <option value="">No Department</option>
+                                <option th:each="dept : ${departments}" 
+                                        th:value="${dept.id}" 
+                                        th:text="${dept.getdept_name()}"
+                                        th:selected="${employeeDepartmentId != null and employeeDepartmentId == dept.id}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Position <span class="optional-badge">(Optional)</span></label>
+                            <input type="text" name="position_id" th:value="${employee.position_id}" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Status -->
+                <div class="form-section">
+                    <div class="form-section-title">⚙️ Account Status</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Active Status <span class="required-star">*</span></label>
+                            <select name="is_active" required>
+                                <option value="true" th:selected="${employee.is_active}">Active</option>
+                                <option value="false" th:selected="${!employee.is_active}">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Enable Payroll <span class="optional-badge">(Optional)</span></label>
+                            <select name="enable_payroll">
+                                <option value="true" th:selected="${employee.enable_payroll}">Yes</option>
+                                <option value="false" th:selected="${!employee.enable_payroll}">No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+             
+
+                <!-- Submit Buttons -->
                 <div style="display: flex; gap: 12px; margin-top: 28px; padding-top: 20px; border-top: 1px solid #e9ecef; justify-content: flex-end;">
-                    <a href="/dashboard/Users" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-decoration: none; background: #f1f3f5; color: #1a1a2e; border: 1px solid #e9ecef;">Cancel</a>
-                    <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; background: linear-gradient(135deg, #2f79ff, #ff9f2d); color: white; box-shadow: 0 4px 15px rgba(47, 121, 255, 0.3); font-family: 'Inter', Arial, sans-serif;">
+                    <a href="/dashboard/Employees" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-decoration: none; background: #f1f3f5; color: #1a1a2e; border: 1px solid #e9ecef;">Cancel</a>
+                    <button type="submit" id="submitBtn" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; background: linear-gradient(135deg, #2f79ff, #ff9f2d); color: white; box-shadow: 0 4px 15px rgba(47, 121, 255, 0.3); font-family: 'Inter', Arial, sans-serif;">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
-                        Update User
+                        Update Employee
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <script>
+        // ===== PROFILE PHOTO FUNCTIONS =====
+        function removeProfilePhoto() {
+            event.stopPropagation();
+            const input = document.getElementById('profilePhotoInput');
+            if (input) {
+                input.value = '';
+                const preview = document.getElementById('profilePhotoPreview');
+                const status = document.getElementById('profilePhotoStatus');
+                const nameSpan = document.querySelector('.profile-photo-info .photo-name');
+                const badgeSpan = document.querySelector('.profile-photo-info .profile-photo-status-badge');
+                
+                if (preview) {
+                    preview.className = 'profile-photo-circle';
+                    preview.innerHTML = `
+                        <span class="placeholder-icon">👤</span>
+                        <div class="upload-hint-overlay"><span>Click to upload</span></div>
+                    `;
+                }
+                
+                if (nameSpan) {
+                    nameSpan.textContent = 'No photo uploaded';
+                    nameSpan.className = 'photo-name empty';
+                }
+                
+                if (badgeSpan) {
+                    badgeSpan.textContent = 'Empty';
+                    badgeSpan.className = 'profile-photo-status-badge empty';
+                }
+                
+                if (status) {
+                    status.style.display = 'flex';
+                    status.className = 'upload-status error';
+                    status.innerHTML = `
+                        <span class="status-icon">🗑️</span>
+                        <span>Photo will be removed on save</span>
+                    `;
+                }
+            }
+        }
+
+        function previewProfilePhoto(input) {
+            const file = input.files[0];
+            if (file) {
+                const preview = document.getElementById('profilePhotoPreview');
+                const status = document.getElementById('profilePhotoStatus');
+                const nameSpan = document.querySelector('.profile-photo-info .photo-name');
+                const sizeSpan = document.querySelector('.profile-photo-info .photo-size');
+                const badgeSpan = document.querySelector('.profile-photo-info .profile-photo-status-badge');
+                
+                // Validate file
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    input.value = '';
+                    return;
+                }
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please upload a valid image (JPEG, PNG, GIF, or WEBP)');
+                    input.value = '';
+                    return;
+                }
+                
+                // Update preview
+                if (preview) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.className = 'profile-photo-circle has-image';
+                        preview.innerHTML = `
+                            <img src="${e.target.result}" alt="${file.name}" />
+                            <div class="upload-hint-overlay"><span>Click to change</span></div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                }
+                
+                if (nameSpan) {
+                    nameSpan.textContent = file.name;
+                    nameSpan.className = 'photo-name';
+                }
+                if (sizeSpan) {
+                    sizeSpan.textContent = (file.size / 1024).toFixed(1) + ' KB';
+                }
+                if (badgeSpan) {
+                    badgeSpan.textContent = 'New';
+                    badgeSpan.className = 'profile-photo-status-badge new';
+                }
+                
+                if (status) {
+                    status.style.display = 'flex';
+                    status.className = 'upload-status success';
+                    status.innerHTML = `
+                        <span class="status-icon">✅</span>
+                        <span>Photo selected: ${file.name}</span>
+                    `;
+                }
+            }
+        }
+
+        // ===== REMOVE PHOTO (for licenses) =====
+        function removePhoto(inputId) {
+            event.stopPropagation();
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = '';
+                const preview = document.getElementById(inputId + 'Preview');
+                const container = document.getElementById(inputId + 'PreviewContainer');
+                const status = document.getElementById(inputId + 'Status');
+                const isLicense = inputId.includes('license');
+                const icon = isLicense ? '📄' : '📄';
+                
+                if (preview) {
+                    preview.className = 'photo-preview';
+                    preview.innerHTML = `
+                        <span class="placeholder-icon">${icon}</span>
+                        <div class="upload-hint-overlay"><span>Click to upload</span></div>
+                    `;
+                }
+                
+                if (container) {
+                    const nameSpan = container.querySelector('.photo-name');
+                    const sizeSpan = container.querySelector('.photo-size');
+                    const badgeSpan = container.querySelector('.photo-status-badge');
+                    
+                    if (nameSpan) {
+                        nameSpan.textContent = 'No file selected';
+                        nameSpan.className = 'photo-name empty';
+                    }
+                    if (sizeSpan) {
+                        sizeSpan.textContent = 'Click to upload';
+                    }
+                    if (badgeSpan) {
+                        badgeSpan.textContent = 'Empty';
+                        badgeSpan.className = 'photo-status-badge empty';
+                    }
+                }
+                
+                if (status) {
+                    status.style.display = 'flex';
+                    status.className = 'upload-status error';
+                    status.innerHTML = `
+                        <span class="status-icon">🗑️</span>
+                        <span>File will be removed on save</span>
+                    `;
+                }
+            }
+        }
+
+        // ===== FILE PREVIEW (for licenses) =====
+        function previewFile(input) {
+            const file = input.files[0];
+            if (file) {
+                const preview = document.getElementById(input.id + 'Preview');
+                const container = document.getElementById(input.id + 'PreviewContainer');
+                const status = document.getElementById(input.id + 'Status');
+                
+                // Validate file
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    input.value = '';
+                    return;
+                }
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please upload a valid image (JPEG, PNG, GIF, or WEBP)');
+                    input.value = '';
+                    return;
+                }
+                
+                if (preview) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.className = 'photo-preview has-image';
+                        preview.innerHTML = `
+                            <img src="${e.target.result}" alt="${file.name}" />
+                            <div class="upload-hint-overlay"><span>Click to change</span></div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                }
+                
+                if (container) {
+                    const nameSpan = container.querySelector('.photo-name');
+                    const sizeSpan = container.querySelector('.photo-size');
+                    const badgeSpan = container.querySelector('.photo-status-badge');
+                    
+                    if (nameSpan) {
+                        nameSpan.textContent = file.name;
+                        nameSpan.className = 'photo-name';
+                    }
+                    if (sizeSpan) {
+                        sizeSpan.textContent = (file.size / 1024).toFixed(1) + ' KB';
+                    }
+                    if (badgeSpan) {
+                        badgeSpan.textContent = 'New';
+                        badgeSpan.className = 'photo-status-badge new';
+                    }
+                }
+                
+                if (status) {
+                    status.style.display = 'flex';
+                    status.className = 'upload-status success';
+                    status.innerHTML = `
+                        <span class="status-icon">✅</span>
+                        <span>File selected: ${file.name}</span>
+                    `;
+                }
+            }
+        }
+
+        // ===== ADD FILE PREVIEW LISTENERS =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Profile photo listener
+            const profileInput = document.getElementById('profilePhotoInput');
+            if (profileInput) {
+                profileInput.addEventListener('change', function() {
+                    previewProfilePhoto(this);
+                });
+            }
+            
+            // License listeners
+            const fileInputs = document.querySelectorAll('#licenseAuto, #licenseMotor');
+            fileInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    previewFile(this);
+                });
+            });
+        });
+
+        // ===== LOADING STATE =====
+        document.getElementById('submitBtn').addEventListener('click', function(e) {
+            const form = document.getElementById('editEmployeeForm');
+            if (form.checkValidity()) {
+                this.innerHTML = `
+                    <span class="spinner"></span>
+                    <span class="btn-text">Updating Employee...</span>
+                `;
+                this.classList.add('btn-loading');
+                this.disabled = true;
+            }
+        });
+
+        console.log('✅ Edit Employee form loaded successfully');
+        console.log('📸 Profile photo: Circular design with click to upload');
+        console.log('📋 Driver licenses: Square preview with image inside');
+        console.log('   - Max file size: 5MB');
+        console.log('   - Supported formats: JPEG, PNG, GIF, WEBP');
+    </script>
 </body>
 </html>

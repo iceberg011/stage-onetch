@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle}">New Leave Request - OneTech</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <style>
+        /* ===== NAVBAR ===== */
+        .navbar {
+            padding: 16px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(5, 7, 11, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: #f5f7fb;
+        }
+
+        .logo span {
+            color: #2f79ff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #f5f7fb;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            position: relative;
+        }
+
+        /* ===== USER PROFILE BUTTON ===== */
+        .user-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 4px 12px 4px 4px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #f5f7fb;
+            position: relative;
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .user-profile-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(47, 121, 255, 0.3);
+        }
+
+        .user-profile-btn .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .user-profile-btn .avatar svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+        }
+
+        .user-profile-btn .user-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .user-profile-btn .dropdown-arrow {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            margin-left: 4px;
+            transition: transform 0.3s ease;
+        }
+
+        .user-profile-btn.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .sidebar-overlay.open {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            max-width: 90vw;
+            height: 100vh;
+            background: #0a0f18;
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 2001;
+            transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        .sidebar-header {
+            padding: 32px 24px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .sidebar-user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sidebar-user-info .avatar-large {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .sidebar-user-info .user-details {
+            flex: 1;
+        }
+
+        .sidebar-user-info .user-details .name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f5f7fb;
+        }
+
+        .sidebar-user-info .user-details .email {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .sidebar-user-info .user-details .role-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 4px;
+            background: rgba(47, 121, 255, 0.15);
+            color: #2f79ff;
+            border: 1px solid rgba(47, 121, 255, 0.2);
+        }
+
+        .sidebar-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.3s ease;
+            line-height: 1;
+        }
+
+        .sidebar-close:hover {
+            color: #f5f7fb;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+        }
+
+        .sidebar-nav .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-nav .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            padding: 0 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .sidebar-nav .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: "Inter", Arial, sans-serif;
+        }
+
+        .sidebar-nav .nav-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #f5f7fb;
+        }
+
+        .sidebar-nav .nav-item .icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-nav .nav-item .badge {
+            margin-left: auto;
+            background: rgba(47, 121, 255, 0.2);
+            color: #2f79ff;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .sidebar-nav .nav-item.logout-item {
+            color: #ef4444;
+            margin-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 16px;
+        }
+
+        .sidebar-nav .nav-item.logout-item:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-family: "Inter", Arial, sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2f79ff, #1a5fd8);
+            color: white;
+            box-shadow: 0 4px 15px rgba(47, 121, 255, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(47, 121, 255, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #f5f7fb;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f5f7fb;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: #f5f7fb;
+            transition: all 0.3s ease;
+        }
+
+        /* ===== FORM CONTAINER ===== */
+        .form-container {
+            max-width: 800px;
+            margin: 100px auto 60px;
+            padding: 0 20px;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-header {
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .form-header h1 {
+            font-family: "Space Grotesk", Arial, sans-serif;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            color: #f5f7fb;
+        }
+
+        .form-header p {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        .form-header .highlight {
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===== FORM ===== */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #f5f7fb;
+            font-size: 0.9rem;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .form-group .help-text {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #f5f7fb;
+            font-size: 0.95rem;
+            font-family: "Inter", Arial, sans-serif;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: #2f79ff;
+            box-shadow: 0 0 0 3px rgba(47, 121, 255, 0.15);
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        .form-control.error {
+            border-color: #ef4444;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            cursor: pointer;
+        }
+
+        select.form-control option {
+            background: #0a0f18;
+            color: #f5f7fb;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group .error-message {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        /* ===== FILE UPLOAD ===== */
+        .file-upload-wrapper {
+            position: relative;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-wrapper:hover {
+            border-color: rgba(47, 121, 255, 0.3);
+            background: rgba(47, 121, 255, 0.05);
+        }
+
+        .file-upload-wrapper .file-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .file-upload-wrapper .file-text {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .file-upload-wrapper .file-text strong {
+            color: #f5f7fb;
+        }
+
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-upload-wrapper .file-name {
+            display: none;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: rgba(34, 197, 94, 0.1);
+            border-radius: 8px;
+            color: #22c55e;
+            font-size: 0.9rem;
+        }
+
+        .file-upload-wrapper.has-file .file-name {
+            display: block;
+        }
+
+        .file-upload-wrapper.has-file .file-text {
+            display: none;
+        }
+
+        /* ===== FORM ACTIONS ===== */
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-top: 8px;
+        }
+
+        .form-actions .btn {
+            padding: 12px 32px;
+            font-size: 1rem;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            color: white;
+            box-shadow: 0 4px 15px rgba(47, 121, 255, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(47, 121, 255, 0.4);
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #f5f7fb;
+        }
+
+        /* ===== ALERTS ===== */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .alert-warning {
+            background: rgba(255, 159, 45, 0.1);
+            border: 1px solid rgba(255, 159, 45, 0.2);
+            color: #ff9f2d;
+        }
+
+        .alert .icon {
+            font-size: 1.4rem;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-card {
+                padding: 24px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                padding: 20px;
+                background: rgba(5, 7, 11, 0.98);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                gap: 16px;
+            }
+
+            .nav-links.open {
+                display: flex;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .user-profile-btn .user-name {
+                display: none;
+            }
+
+            .sidebar {
+                width: 320px;
+            }
+
+            .form-container {
+                margin: 80px auto 40px;
+                padding: 0 16px;
+            }
+
+            .form-header h1 {
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 12px 16px;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-width: 100vw;
+            }
+
+            .form-card {
+                padding: 16px;
+            }
+
+            .file-upload-wrapper {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">One<span>Tech</span></a>
+        <div class="nav-links" id="navLinks">
+            <a href="/" th:classappend="${activePage == 'accueil'} ? 'active' : ''">Accueil</a>
+            <a href="/about" th:classappend="${activePage == 'about'} ? 'active' : ''">About</a>
+            <a href="/Leave" th:classappend="${activePage == 'Leave'} ? 'active' : ''">Holidays</a>
+            <a href="/services" th:classappend="${activePage == 'services'} ? 'active' : ''">Services</a>
+            <a href="/contact" th:classappend="${activePage == 'contact'} ? 'active' : ''">Contact</a>
+        </div>
+
+        <div class="nav-actions">
+            <div th:if="${employee != null}">
+                <button class="user-profile-btn" id="profileBtn" onclick="toggleSidebar()">
+                    <div class="avatar" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21a8 8 0 0 0-16 0" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                    </div>
+                    <span class="user-name" th:text="${displayName}">Employee</span>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+            </div>
+
+            <div th:if="${employee == null}">
+                <a href="/signin" class="btn btn-outline">Sign In</a>
+                <a href="/signup" class="btn btn-primary">Get Started</a>
+            </div>
+            <button class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div th:if="${employee != null}" class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div th:if="${employee != null}" class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-user-info">
+                <div class="avatar-large" th:text="${profileInitial}">U</div>
+                <div class="user-details">
+                    <div class="name" th:text="${displayName}">User Name</div>
+                    <div class="email" th:text="${email}">user@email.com</div>
+                    <span class="role-badge" th:text="${isAdmin ? 'Administrator' : 'User'}">User</span>
+                </div>
+            </div>
+            <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <a href="/dashboard" class="nav-item" th:if="${canAccessDashboard}">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="/dashboard/profile" class="nav-item">
+                    <span class="icon">👤</span> My Profile
+                </a>
+                <a href="/dashboard/leaves" class="nav-item">
+                    <span class="icon">📋</span> My Leaves
+                    <span class="badge" th:text="${pendingLeaves}">3</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Support</div>
+                <a href="/help" class="nav-item">
+                    <span class="icon">❓</span> Help Center
+                </a>
+                <a href="/contact" class="nav-item">
+                    <span class="icon">💬</span> Contact Support
+                </a>
+            </div>
+            <a href="/logout" class="nav-item logout-item">
+                <span class="icon">🚪</span> Logout
+                <span style="margin-left: auto; font-size: 0.8rem; color: #94a3b8;">→</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <div class="form-card">
+            <!-- Form Header -->
+            <div class="form-header">
+                <h1>New Leave <span class="highlight">Request</span></h1>
+                <p>Fill in the details below to submit your leave request</p>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <div th:if="${success}" class="alert alert-success">
+                <span class="icon">✅</span>
+                <span th:text="${success}">Leave request submitted successfully!</span>
+            </div>
+            <div th:if="${error}" class="alert alert-error">
+                <span class="icon">❌</span>
+                <span th:text="${error}">An error occurred. Please try again.</span>
+            </div>
+            <div th:if="${warning}" class="alert alert-warning">
+                <span class="icon">⚠️</span>
+                <span th:text="${warning}">Please check your input.</span>
+            </div>
+
+            <!-- Leave Form -->
+            <form th:action="@{/Leaves}" method="post" enctype="multipart/form-data" id="leaveForm">
+                <!-- Leave Type -->
+                <div class="form-group">
+                    <label for="leaveType">Leave Type <span class="required">*</span></label>
+                    <select id="leaveType" name="leaveType" class="form-control" required>
+                        <option value="">Select leave type...</option>
+                        <option value="annual">Annual Leave</option>
+                        <option value="sick">Sick Leave</option>
+                        <option value="maternity">Maternity Leave</option>
+                        <option value="paternity">Paternity Leave</option>
+                        <option value="unpaid">Unpaid Leave</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <div class="help-text">Select the type of leave you are requesting</div>
+                </div>
+
+                <!-- Date Range -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startTime">Start Date & Time <span class="required">*</span></label>
+                        <input type="datetime-local" id="startTime" name="startTime" class="form-control" required />
+                        <div class="help-text">When does your leave start?</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime">End Date & Time <span class="required">*</span></label>
+                        <input type="datetime-local" id="endTime" name="endTime" class="form-control" required />
+                        <div class="help-text">When does your leave end?</div>
+                    </div>
+                </div>
+
+                <!-- Leave Days (Auto-calculated) -->
+                <div class="form-group">
+                    <label for="leaveDays">Total Leave Days <span class="required">*</span></label>
+                    <input type="number" id="leaveDays" name="leaveDays" class="form-control" 
+                           step="0.5" min="0.5" placeholder="e.g., 2.5" required />
+                    <div class="help-text">Enter the total number of days (including half days)</div>
+                </div>
+
+                <!-- Reason -->
+                <div class="form-group">
+                    <label for="reason">Reason for Leave <span class="required">*</span></label>
+                    <textarea id="reason" name="reason" class="form-control" rows="4" 
+                              placeholder="Please provide a detailed reason for your leave request..." required></textarea>
+                    <div class="help-text">Maximum 1000 characters</div>
+                </div>
+
+                <!-- Attachment -->
+                <div class="form-group">
+                    <label>Attachment (Optional)</label>
+                    <div class="file-upload-wrapper" id="fileUploadWrapper">
+                        <span class="file-icon">📎</span>
+                        <div class="file-text">
+                            <strong>Click to upload</strong> or drag and drop<br />
+                            <span style="font-size: 0.8rem; color: #64748b;">Supported files: PDF, DOC, DOCX, JPG, PNG (Max 5MB)</span>
+                        </div>
+                        <div class="file-name" id="fileName">📄 <span id="fileNameText"></span></div>
+                        <input type="file" id="attachment" name="attachment" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                    </div>
+                    <div class="help-text">Attach any supporting documents (doctor's note, etc.)</div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="/Leaves" class="btn btn-cancel">Cancel</a>
+                    <button type="submit" class="btn btn-submit">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="brand">
+                <a href="/" class="logo">One<span>Tech</span></a>
+                <p>Your trusted partner in technology solutions.</p>
+            </div>
+            <div>
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/">Accueil</a></li>
+                    <li><a href="/about">About Us</a></li>
+                    <li><a href="/Leave">Holidays</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Services</h4>
+                <ul>
+                    <li><a href="/services">Cloud Solutions</a></li>
+                    <li><a href="/services">AI &amp; Analytics</a></li>
+                    <li><a href="/services">Security</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="/contact">Help Center</a></li>
+                    <li><a href="/contact">Documentation</a></li>
+                    <li><a href="/contact">API Reference</a></li>
+                </ul>
+            </div>
+            <div class="bottom">
+                <div class="copyright">&copy; 2026 OneTech. All rights reserved.</div>
+                <div class="social">
+                    <a href="#">🐦</a>
+                    <a href="#">🔗</a>
+                    <a href="#">🐙</a>
+                    <a href="#">📺</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ===== TOGGLE MENU =====
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('open');
+        }
+
+        // ===== TOGGLE SIDEBAR =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const profileBtn = document.getElementById('profileBtn');
+
+            if (!sidebar || !overlay) return;
+
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+
+            if (profileBtn) {
+                profileBtn.classList.toggle('active');
+            }
+
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        // ===== ESCAPE KEY =====
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar && sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('open');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
+
+        // ===== FILE UPLOAD HANDLER =====
+        document.getElementById('attachment').addEventListener('change', function(e) {
+            const file = this.files[0];
+            const wrapper = document.getElementById('fileUploadWrapper');
+            const fileNameText = document.getElementById('fileNameText');
+
+            if (file) {
+                // Validate file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size exceeds 5MB limit. Please choose a smaller file.');
+                    this.value = '';
+                    wrapper.classList.remove('has-file');
+                    return;
+                }
+
+                // Validate file type
+                const allowedTypes = ['application/pdf', 'application/msword', 
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'image/jpeg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Invalid file type. Please upload PDF, DOC, DOCX, JPG, or PNG files.');
+                    this.value = '';
+                    wrapper.classList.remove('has-file');
+                    return;
+                }
+
+                fileNameText.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+                wrapper.classList.add('has-file');
+            } else {
+                wrapper.classList.remove('has-file');
+            }
+        });
+
+        // ===== DATE VALIDATION =====
+        document.getElementById('startTime').addEventListener('change', function() {
+            const start = new Date(this.value);
+            const end = new Date(document.getElementById('endTime').value);
+            
+            if (end && start > end) {
+                alert('Start date cannot be after end date.');
+                this.value = '';
+            }
+        });
+
+        document.getElementById('endTime').addEventListener('change', function() {
+            const start = new Date(document.getElementById('startTime').value);
+            const end = new Date(this.value);
+            
+            if (start && end < start) {
+                alert('End date cannot be before start date.');
+                this.value = '';
+            }
+        });
+
+        // ===== AUTO-CALCULATE LEAVE DAYS =====
+        function calculateLeaveDays() {
+            const startInput = document.getElementById('startTime');
+            const endInput = document.getElementById('endTime');
+            const daysInput = document.getElementById('leaveDays');
+
+            if (startInput.value && endInput.value) {
+                const start = new Date(startInput.value);
+                const end = new Date(endInput.value);
+                
+                if (end > start) {
+                    const diffTime = end - start;
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    // Round to nearest 0.5
+                    const rounded = Math.round(diffDays * 2) / 2;
+                    if (rounded >= 0.5) {
+                        daysInput.value = rounded;
+                    }
+                }
+            }
+        }
+
+        document.getElementById('startTime').addEventListener('change', calculateLeaveDays);
+        document.getElementById('endTime').addEventListener('change', calculateLeaveDays);
+
+        // ===== FORM VALIDATION =====
+        document.getElementById('leaveForm').addEventListener('submit', function(e) {
+            const start = document.getElementById('startTime').value;
+            const end = document.getElementById('endTime').value;
+            const days = document.getElementById('leaveDays').value;
+            const reason = document.getElementById('reason').value.trim();
+            const leaveType = document.getElementById('leaveType').value;
+
+            if (!start || !end || !days || !reason || !leaveType) {
+                e.preventDefault();
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            if (parseFloat(days) < 0.5) {
+                e.preventDefault();
+                alert('Leave days must be at least 0.5 days.');
+                return;
+            }
+
+            if (reason.length < 10) {
+                e.preventDefault();
+                alert('Please provide a more detailed reason (at least 10 characters).');
+                return;
+            }
+
+            if (reason.length > 1000) {
+                e.preventDefault();
+                alert('Reason exceeds 1000 characters limit.');
+                return;
+            }
+        });
+
+        // ===== RESPONSIVE: Close mobile menu on resize =====
+        window.addEventListener('resize', function() {
+            const navLinks = document.getElementById('navLinks');
+            if (window.innerWidth > 768 && navLinks.classList.contains('open')) {
+                navLinks.classList.remove('open');
+            }
+        });
+
+        // ===== CLOSE MOBILE MENU ON LINK CLICK =====
+        document.querySelectorAll('#navLinks a').forEach(link => {
+            link.addEventListener('click', function() {
+                const navLinks = document.getElementById('navLinks');
+                if (window.innerWidth <= 768) {
+                    navLinks.classList.remove('open');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

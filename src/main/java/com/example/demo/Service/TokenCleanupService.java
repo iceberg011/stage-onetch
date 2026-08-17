@@ -5,13 +5,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.Repository.UserRepository;
+import com.example.demo.Repository.EmployeesRepository;
 
 @Service
 public class TokenCleanupService {
 
     @Autowired
-    private UserRepository userRepository;
+    private EmployeesRepository employeesRepository;
 
     // Run every hour to clean expired tokens
     @Scheduled(fixedDelay = 3600000) // 1 hour

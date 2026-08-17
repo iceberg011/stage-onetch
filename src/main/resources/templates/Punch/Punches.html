@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Punches / Attendance</title>
+    <style>
+        /* ===== STATUS BADGES ===== */
+        .punch-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+        }
+        .punch-in {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        .punch-out {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .punch-unknown {
+            background: rgba(108, 117, 125, 0.15);
+            color: #6c757d;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+        }
+
+        /* ===== TABLE CONTAINER ===== */
+        .table-container {
+            overflow-x: auto;
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+        thead {
+            background: #f8f9fa;
+        }
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            font-weight: 600;
+            border-bottom: 1px solid #e9ecef;
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f3f5;
+            color: #1a1a2e;
+            vertical-align: middle;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* ===== EMPLOYEE INFO ===== */
+        .employee-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+        }
+        .employee-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .employee-name {
+            font-weight: 500;
+            color: #1a1a2e;
+        }
+        .employee-code {
+            color: #6c757d;
+            font-size: 0.75rem;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-btn {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+        .action-view {
+            background: rgba(47, 121, 255, 0.1);
+            color: #2f79ff;
+        }
+        .action-view:hover {
+            background: rgba(47, 121, 255, 0.2);
+        }
+
+        /* ===== STATS GRID ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stat-card .stat-label {
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .stat-value {
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 2px;
+            color: #1a1a2e;
+        }
+        .stat-card .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-value.punch-in { color: #22c55e; }
+        .stat-value.punch-out { color: #ef4444; }
+        .stat-value.total { color: #2f79ff; }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+        .search-bar form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        .search-bar input,
+        .search-bar select {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            background: #ffffff;
+            color: #1a1a2e;
+            font-size: 0.9rem;
+            outline: none;
+            min-width: 140px;
+        }
+        .search-bar input:focus,
+        .search-bar select:focus {
+            border-color: #2f79ff;
+            box-shadow: 0 0 0 3px rgba(47, 121, 255, 0.1);
+        }
+        .search-bar .search-input {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .search-bar .search-input input {
+            padding-left: 36px;
+            width: 100%;
+        }
+        .search-bar .search-input svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-search {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #2f79ff, #1a5fd8);
+            color: white;
+            box-shadow: 0 4px 15px rgba(47, 121, 255, 0.2);
+        }
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(47, 121, 255, 0.3);
+        }
+        .btn-clear {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            background: #f1f3f5;
+            color: #1a1a2e;
+            border: 1px solid #e9ecef;
+        }
+        .btn-clear:hover {
+            background: #e9ecef;
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .page-header .left h2 {
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 4px;
+            color: #1a1a2e;
+        }
+        .page-header .left p {
+            color: #6c757d;
+        }
+
+        /* ===== ACTIVE FILTERS ===== */
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e9ecef;
+        }
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+        }
+        .filter-tag-search {
+            background: #e8f4fd;
+            color: #2f79ff;
+        }
+        .filter-tag-date {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .filter-tag-type {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .filter-tag a { text-decoration: none; }
+        .filter-tag-search a { color: #2f79ff; }
+        .filter-tag-date a { color: #d97706; }
+        .filter-tag-type a { color: #059669; }
+
+        /* ===== SUMMARY BAR ===== */
+        .summary-bar {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #e8f4fd;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #1a1a2e;
+            border: 1px solid #2f79ff;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+        .empty-state h3 {
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .search-bar form {
+                flex-direction: column;
+            }
+            .search-bar .search-input {
+                width: 100%;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="left">
+                <h2>Punches / Attendance</h2>
+                <p>View and manage all employee punches</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Total Punches</div>
+                    <div class="stat-value total" th:text="${totalPunches}">0</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(47, 121, 255, 0.12); color: #2f79ff;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5 0a6 6 0 00-13 0m13.5 0h.008v.008h-.008v-.008zm-13.5 0h.008v.008h-.008v-.008z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Punch In</div>
+                    <div class="stat-value punch-in" th:text="${inPunches}">0</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(34, 197, 94, 0.12); color: #22c55e;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Punch Out</div>
+                    <div class="stat-value punch-out" th:text="${outPunches}">0</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Today's Punches</div>
+                    <div class="stat-value total" th:text="${todayPunches}">0</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(47, 121, 255, 0.12); color: #2f79ff;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <form method="get" action="/dashboard/punches">
+                <div class="search-input">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="search" placeholder="Search by employee name or email..." th:value="${searchQuery}" />
+                </div>
+
+                <input type="date" name="startDate" placeholder="Start Date" th:value="${startDate}" />
+                <input type="date" name="endDate" placeholder="End Date" th:value="${endDate}" />
+
+                <select name="punchType">
+                    <option value="all" th:selected="${selectedPunchType == null or selectedPunchType == 'all'}">All Types</option>
+                    <option value="IN" th:selected="${selectedPunchType == 'IN'}">Punch In</option>
+                    <option value="OUT" th:selected="${selectedPunchType == 'OUT'}">Punch Out</option>
+                </select>
+
+                <button type="submit" class="btn-search">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Search
+                </button>
+
+                <a href="/dashboard/punches" class="btn-clear">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Clear
+                </a>
+            </form>
+
+            <!-- Active Filters Display -->
+            <div th:if="${searchQuery != null or startDate != null or selectedPunchType != null}" class="active-filters">
+                <span style="font-size: 0.85rem; color: #6c757d; display: flex; align-items: center;">Active Filters:</span>
+                
+                <span th:if="${searchQuery != null}" class="filter-tag filter-tag-search">
+                    Search: <strong th:text="${searchQuery}"></strong>
+                    <a th:href="'/dashboard/punches?search=&startDate=' + ${startDate} + '&endDate=' + ${endDate} + '&punchType=' + ${selectedPunchType}">✕</a>
+                </span>
+                
+                <span th:if="${startDate != null}" class="filter-tag filter-tag-date">
+                    From: <strong th:text="${startDate}"></strong>
+                    <span th:if="${endDate != null}">to <strong th:text="${endDate}"></strong></span>
+                    <a th:href="'/dashboard/punches?search=' + ${searchQuery} + '&startDate=&endDate=&punchType=' + ${selectedPunchType}">✕</a>
+                </span>
+
+                <span th:if="${selectedPunchType != null and selectedPunchType != 'all'}" class="filter-tag filter-tag-type">
+                    Type: <strong th:text="${selectedPunchType}"></strong>
+                    <a th:href="'/dashboard/punches?search=' + ${searchQuery} + '&startDate=' + ${startDate} + '&endDate=' + ${endDate} + '&punchType=all'">✕</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Punches Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">#</th>
+                        <th>Employee</th>
+                        <th>Code</th>
+                        <th>Punch Date</th>
+                        <th>Punch Time</th>
+                        <th>Punch DateTime</th>
+                        <th>Week</th>
+                        <th style="text-align: center;">Type</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item, iterStat : ${punches}" th:if="${punches != null and not punches.isEmpty()}">
+                        <td style="text-align: center; font-weight: 600; color: #6c757d;" th:text="${iterStat.index + 1}">1</td>
+                        
+                        <td>
+                            <div class="employee-info">
+                                <div class="employee-avatar" 
+                                     th:text="${item.employeeName != null ? #strings.substring(item.employeeName, 0, 1) : 'U'}">
+                                </div>
+                                <div>
+                                    <div class="employee-name" th:text="${item.employeeName != null ? item.employeeName : 'N/A'}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            <span style="font-weight: 600; color: #2f79ff; font-size: 0.85rem;" th:text="${item.employeeCode != null ? item.employeeCode : 'N/A'}"></span>
+                        </td>
+                        
+                        <td th:text="${item.punchdate != null ? #temporals.format(item.punchdate, 'yyyy-MM-dd') : 'N/A'}"></td>
+                        <td th:text="${item.punchtime != null ? #temporals.format(item.punchtime, 'HH:mm:ss') : 'N/A'}"></td>
+                        <td th:text="${item.punchdatetime != null ? #temporals.format(item.punchdatetime, 'yyyy-MM-dd HH:mm:ss') : 'N/A'}"></td>
+                        <td th:text="${item.week != null ? item.week : 'N/A'}"></td>
+                        
+                        <td style="text-align: center;">
+                            <span class="punch-badge" 
+                                  th:classappend="${item.punchType == 'IN' ? 'punch-in' : (item.punchType == 'OUT' ? 'punch-out' : 'punch-unknown')}"
+                                  th:text="${item.punchType}">
+                                IN
+                            </span>
+                        </td>
+                        
+                        <td style="text-align: right;">
+                            <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                                <a th:href="'/dashboard/punches/view/' + ${item.id}" class="action-btn action-view">View</a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- No Punches Message -->
+        <div th:if="${punches == null or punches.isEmpty()}" class="empty-state">
+            <div class="icon">🕐</div>
+            <h3>No punches found</h3>
+            <p th:text="${searchQuery != null} ? 'No punches match your search criteria.' : 'There are no punches in the system yet.'"></p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+                <a th:if="${searchQuery != null}" href="/dashboard/punches" class="btn-clear">Clear Filters</a>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div th:if="${punches != null and not punches.isEmpty()}" class="summary-bar">
+            <span><strong>📊 Total:</strong> <span th:text="${totalPunches}"></span></span>
+            <span><strong>⬆️ Punch In:</strong> <span th:text="${inPunches}"></span></span>
+            <span><strong>⬇️ Punch Out:</strong> <span th:text="${outPunches}"></span></span>
+            <span><strong>📅 Today:</strong> <span th:text="${todayPunches}"></span></span>
+            <span th:if="${searchQuery != null}"><strong>🔍 Search:</strong> <span th:text="${searchQuery}"></span></span>
+            <span th:if="${startDate != null}"><strong>📅 From:</strong> <span th:text="${startDate}"></span></span>
+            <span th:if="${endDate != null}"><strong>To:</strong> <span th:text="${endDate}"></span></span>
+            <span th:if="${selectedPunchType != null and selectedPunchType != 'all'}"><strong>📌 Type:</strong> <span th:text="${selectedPunchType}"></span></span>
+        </div>
+    </div>
+</body>
+</html>

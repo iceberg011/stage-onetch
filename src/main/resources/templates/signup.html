@@ -411,18 +411,21 @@
                 <div class="row">
                     <div class="col">
                         <label for="firstName">First name</label>
-                        <input type="text" id="firstName" name="first_name" placeholder="Your first name" required />
+                        <input type="text" id="firstName" name="firstName" placeholder="Your first name" required />
+
                     </div>
                     <div class="col">
                         <label for="lastName">Last name</label>
-                        <input type="text" id="lastName" name="last_name" placeholder="Your last name" required />
+                        <input type="text" id="lastName" name="lastName" placeholder="Your last name" required />
+
                     </div>
                 </div>
 
                 <!-- Phone Number -->
                 <div class="form-group">
                     <label for="phone">Phone Number</label>
-                    <input type="text" id="phone" name="tele_phone" placeholder="Enter your phone number" />
+                    <input type="text" id="phone" name="phoneNumber" placeholder="Enter your phone number" />
+
                 </div>
 
                 <!-- Email -->
@@ -448,6 +451,9 @@
 
             <div class="footer-note">
                 Already have an account? <a th:href="@{/signin}">Sign in</a>
+            </div>
+            <div class="footer-note">   
+                 <a th:href="@{/Home}">Back to Home</a>
             </div>
         </div>
     </section>

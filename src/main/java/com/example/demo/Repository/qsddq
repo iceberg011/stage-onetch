@@ -1,6 +1,6 @@
 package com.example.demo.Repository;
 
-import com.example.demo.Entity.UserAccount;
+import com.example.demo.Entity.qsd;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,21 +11,21 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserAccount, Long> {
+public interface UserRepository extends JpaRepository<qsd, Long> {
     
     // ===== BASIC FIND METHODS =====
-    Optional<UserAccount> findByUsername(String username);
-    Optional<UserAccount> findByEmail(String email);
+    Optional<qsd> findByUsername(String username);
+    Optional<qsd> findByEmail(String email);
     
     // ===== REMEMBER ME METHODS - Using @Query to match the entity field name =====
     
     // Find by session_key (using @Query with the exact field name from entity)
     @Query("SELECT u FROM UserAccount u WHERE u.session_key = :sessionKey")
-    Optional<UserAccount> findBySessionKey(@Param("sessionKey") String sessionKey);
+    Optional<qsd> findBySessionKey(@Param("sessionKey") String sessionKey);
     
     // Find user by token (session_key starts with token)
     @Query("SELECT u FROM UserAccount u WHERE u.session_key LIKE CONCAT(:token, '%')")
-    Optional<UserAccount> findByRememberToken(@Param("token") String token);
+    Optional<qsd> findByRememberToken(@Param("token") String token);
     
     // ===== EXISTENCE CHECKS =====
     boolean existsByUsername(String username);

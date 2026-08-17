@@ -1,24 +1,467 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Add User</title>
+    <title>Add Employee</title>
+    <style>
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            grid-column: 1 / -1;
+        }
+        .form-section-title {
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            font-size: 1rem;
+            color: #1a1a2e;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .form-hint {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        .optional-badge {
+            font-size: 0.7rem;
+            color: #6c757d;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+        .required-star {
+            color: #ef4444;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group input,
+        .form-group select {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            background: #ffffff;
+            color: #1a1a2e;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'Inter', Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2f79ff;
+            box-shadow: 0 0 0 3px rgba(47, 121, 255, 0.1);
+        }
+        .form-group input.error,
+        .form-group select.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        .form-group input.success,
+        .form-group select.success {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+        .form-group input[type="file"] {
+            padding: 10px 14px;
+            border: 2px dashed #e9ecef;
+            background: #fafafa;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        .form-group input[type="file"]:hover {
+            border-color: #2f79ff;
+            background: #f0f7ff;
+        }
+        .form-group input[type="file"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        /* Validation Styles */
+        .error-message {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
+        .validation-summary {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .validation-summary.show {
+            display: block;
+        }
+        .validation-summary ul {
+            margin: 8px 0 0 20px;
+            color: #dc2626;
+        }
+        .validation-summary ul li {
+            margin-bottom: 4px;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 0.8s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .btn-loading .spinner {
+            display: inline-block;
+        }
+        .btn-loading .btn-text {
+            display: none;
+        }
+
+        /* ===== PROFILE PHOTO STYLES ===== */
+        .profile-photo-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            grid-column: 1 / -1;
+        }
+
+        .profile-photo-wrapper:hover {
+            border-color: #2f79ff;
+            box-shadow: 0 2px 8px rgba(47, 121, 255, 0.1);
+        }
+
+        .profile-photo-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #e9ecef;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .profile-photo-circle:hover {
+            border-color: #2f79ff;
+        }
+
+        .profile-photo-circle.has-image {
+            border-color: #2f79ff;
+        }
+
+        .profile-photo-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-photo-circle .placeholder-icon {
+            font-size: 3.5rem;
+            color: #adb5bd;
+        }
+
+        .profile-photo-circle .upload-hint-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(47, 121, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 50%;
+        }
+
+        .profile-photo-circle:hover .upload-hint-overlay {
+            opacity: 1;
+        }
+
+        .profile-photo-circle .upload-hint-overlay span {
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .profile-photo-info {
+            text-align: center;
+        }
+
+        .profile-photo-info .photo-name {
+            font-weight: 600;
+            color: #1a1a2e;
+            font-size: 0.95rem;
+        }
+
+        .profile-photo-info .photo-name.empty {
+            color: #6c757d;
+            font-weight: 400;
+        }
+
+        .profile-photo-info .photo-size {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .profile-photo-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .profile-photo-status-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .profile-photo-status-badge.empty {
+            background: #f1f3f5;
+            color: #6c757d;
+        }
+
+        .photo-upload-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .photo-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-preview-container:hover {
+            border-color: #2f79ff;
+            box-shadow: 0 2px 8px rgba(47, 121, 255, 0.1);
+        }
+
+        .photo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-preview:hover {
+            border-color: #2f79ff;
+        }
+
+        .photo-preview.has-image {
+            border-color: #2f79ff;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-preview .placeholder-icon {
+            font-size: 2.5rem;
+            color: #adb5bd;
+        }
+
+        .photo-preview .badge-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 0.6rem;
+            padding: 3px 0;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .photo-preview .upload-hint-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(47, 121, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .photo-preview:hover .upload-hint-overlay {
+            opacity: 1;
+        }
+
+        .photo-preview .upload-hint-overlay span {
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .photo-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .photo-info .photo-name {
+            font-weight: 600;
+            color: #1a1a2e;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .photo-info .photo-name.empty {
+            color: #6c757d;
+            font-weight: 400;
+        }
+
+        .photo-info .photo-size {
+            color: #6c757d;
+            font-size: 0.75rem;
+        }
+
+        .photo-status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .photo-status-badge.empty {
+            background: #f1f3f5;
+            color: #6c757d;
+        }
+
+        .upload-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            padding: 4px 0;
+            justify-content: center;
+        }
+
+        .upload-status.success {
+            color: #16a34a;
+        }
+
+        .upload-status .status-icon {
+            font-size: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .profile-photo-circle {
+                width: 100px;
+                height: 100px;
+            }
+            .photo-preview {
+                width: 60px;
+                height: 60px;
+            }
+            .photo-preview-container {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
 </head>
 <body>
     <div th:fragment="content">
-        <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 20px; padding: 32px; max-width: 900px; margin: 0 auto;">
+        <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 20px; padding: 32px; max-width: 1000px; margin: 0 auto;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid #e9ecef;">
                 <h2 style="font-family: 'Space Grotesk', Arial, sans-serif; font-size: 1.4rem; color: #1a1a2e; display: flex; align-items: center; gap: 12px;">
                     <svg width="28" height="28" fill="none" stroke="#2f79ff" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                     </svg>
-                    Add New User
+                    Add New Employee
                 </h2>
-                <a href="/dashboard/Users" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 10px; color: #6c757d; text-decoration: none; font-weight: 500; font-size: 0.9rem; border: 1px solid #e9ecef; background: #ffffff;">
+                <a href="/dashboard/Employees" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 10px; color: #6c757d; text-decoration: none; font-weight: 500; font-size: 0.9rem; border: 1px solid #e9ecef; background: #ffffff;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     Back to List
                 </a>
+            </div>
+
+            <!-- Validation Summary -->
+            <div id="validationSummary" class="validation-summary">
+                <strong>⚠️ Please fix the following errors:</strong>
+                <ul id="errorList"></ul>
             </div>
 
             <!-- Error Alert -->
@@ -38,90 +481,614 @@
             </div>
 
             <!-- Form -->
-            <form th:action="@{/dashboard/users/CreateUser}" method="post">
+            <form id="employeeForm" th:action="@{/dashboard/employees/CreateEmployee}" method="post" enctype="multipart/form-data" onsubmit="return validateForm(event)">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">First Name <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="first_name" placeholder="Enter first name" required style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;" />
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Last Name <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="last_name" placeholder="Enter last name" required style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;" />
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Email <span style="color: #ef4444;">*</span></label>
-                        <input type="email" name="email" placeholder="example@email.com" required style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;" />
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Phone</label>
-                        <input type="text" name="tele_phone" placeholder="Phone number" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;" />
-                        <span style="font-size: 0.75rem; color: #6c757d;">Format: 1234567890</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Username</label>
-                        <input type="text" name="username" placeholder="Leave empty for auto-generation" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;" />
-                        <span style="font-size: 0.75rem; color: #6c757d;">Auto-generated if left empty</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Password <span style="color: #ef4444;">*</span></label>
-                        <input type="password" name="password" placeholder="Enter password" required style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;" />
-                        <span style="font-size: 0.75rem; color: #6c757d;">Minimum 8 characters</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Confirm Password <span style="color: #ef4444;">*</span></label>
-                        <input type="password" name="confirm_password" placeholder="Confirm password" required style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;" />
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Role</label>
-                        <select name="role" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                            <option value="user">User</option>
-                            <option value="admin">Administrator</option>
-                            <option value="staff">Staff</option>
-                        </select>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #1a1a2e;">Status</label>
-                        <select name="is_active" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #e9ecef; background: #ffffff; color: #1a1a2e; font-size: 0.9rem; font-family: 'Inter', Arial, sans-serif;">
-                            <option value="true">Active</option>
-                            <option value="false">Inactive</option>
-                        </select>
-                    </div>
-                    <div style="grid-column: 1 / -1; margin-top: 8px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 0;">
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0;">
-                                <input type="checkbox" name="is_staff" id="is_staff" style="width: 18px; height: 18px; cursor: pointer; accent-color: #2f79ff;" />
-                                <label for="is_staff" style="font-weight: 500; font-size: 0.9rem; color: #1a1a2e; cursor: pointer;">Staff</label>
-                                <span style="font-size: 0.75rem; color: #6c757d; margin-left: 4px;">(Limited admin access)</span>
+                    
+                    <!-- ===== PERSONAL INFORMATION ===== -->
+                    <div class="form-section">
+                        <div class="form-section-title">👤 Personal Information</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name <span class="required-star">*</span></label>
+                                <input type="text" id="firstName" name="first_name" placeholder="Enter first name" required data-required="true" />
+                                <div class="error-message" id="firstNameError">First name is required</div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0;">
-                                <input type="checkbox" name="is_superuser" id="is_superuser" style="width: 18px; height: 18px; cursor: pointer; accent-color: #2f79ff;" />
-                                <label for="is_superuser" style="font-weight: 500; font-size: 0.9rem; color: #1a1a2e; cursor: pointer;">Superuser</label>
-                                <span style="font-size: 0.75rem; color: #6c757d; margin-left: 4px;">(All permissions)</span>
+                            <div class="form-group">
+                                <label>Last Name <span class="required-star">*</span></label>
+                                <input type="text" id="lastName" name="last_name" placeholder="Enter last name" required data-required="true" />
+                                <div class="error-message" id="lastNameError">Last name is required</div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0;">
-                                <input type="checkbox" name="is_public" id="is_public" style="width: 18px; height: 18px; cursor: pointer; accent-color: #2f79ff;" />
-                                <label for="is_public" style="font-weight: 500; font-size: 0.9rem; color: #1a1a2e; cursor: pointer;">Public</label>
-                                <span style="font-size: 0.75rem; color: #6c757d; margin-left: 4px;">(Visible profile)</span>
+                            <div class="form-group">
+                                <label>Nickname <span class="optional-badge">(Optional)</span></label>
+                                <input type="text" id="nickname" name="nickname" placeholder="Leave empty for auto-generation" />
+                                <span class="form-hint">Auto-generated if left empty</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0;">
-                                <input type="checkbox" name="can_manage_all_dept" id="can_manage_all_dept" style="width: 18px; height: 18px; cursor: pointer; accent-color: #2f79ff;" />
-                                <label for="can_manage_all_dept" style="font-weight: 500; font-size: 0.9rem; color: #1a1a2e; cursor: pointer;">Manage All Departments</label>
+                            <div class="form-group">
+                                <label>Gender <span class="optional-badge">(Optional)</span></label>
+                                <select id="gender" name="gender">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Birthday <span class="optional-badge">(Optional)</span></label>
+                                <input type="date" id="birthday" name="birthday" />
                             </div>
                         </div>
                     </div>
+
+                    <!-- ===== CONTACT INFORMATION ===== -->
+                    <div class="form-section">
+                        <div class="form-section-title">📞 Contact Information</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email <span class="required-star">*</span></label>
+                                <input type="email" id="email" name="email" placeholder="example@email.com" required data-required="true" data-email="true" />
+                                <div class="error-message" id="emailError">Please enter a valid email address</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Mobile <span class="optional-badge">(Optional)</span></label>
+                                <input type="tel" id="mobile" name="mobile" placeholder="Mobile number" data-phone="true" />
+                                <span class="form-hint">Format: 1234567890</span>
+                                <div class="error-message" id="mobileError">Please enter a valid phone number (10 digits)</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Office Tel <span class="optional-badge">(Optional)</span></label>
+                                <input type="tel" id="officeTel" name="office_tel" placeholder="Office phone number" data-phone="true" />
+                            </div>
+                            <div class="form-group">
+                                <label>Contact Tel <span class="optional-badge">(Optional)</span></label>
+                                <input type="tel" id="contactTel" name="contact_tel" placeholder="Alternative phone number" data-phone="true" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== NATIONALITY & RELIGION ===== -->
+                    <div class="form-section">
+                        <div class="form-section-title">🌍 Nationality & Religion</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nationality <span class="optional-badge">(Optional)</span></label>
+                                <input type="text" id="national" name="national" placeholder="e.g., Tunisian, French" />
+                            </div>
+                            <div class="form-group">
+                                <label>Religion <span class="optional-badge">(Optional)</span></label>
+                                <input type="text" id="religion" name="religion" placeholder="e.g., Islam, Christianity" />
+                            </div>
+                            <div class="form-group">
+                                <label>City <span class="optional-badge">(Optional)</span></label>
+                                <input type="text" id="city" name="city" placeholder="City name" />
+                            </div>
+                            <div class="form-group">
+                                <label>Title <span class="optional-badge">(Optional)</span></label>
+                                <input type="text" id="title" name="title" placeholder="e.g., Manager, Developer" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== DRIVING LICENSE & SECURITY ===== -->
+                    <div class="form-section">
+                        <div class="form-section-title">🚗 Driving License & Security</div>
+                        <div class="form-row">
+                            <!-- Driver License (Auto) -->
+                            <div class="form-group">
+                                <label>Driver License (Auto) <span class="optional-badge">(Optional)</span></label>
+                                <div class="photo-upload-wrapper">
+                                    <input type="file" name="driver_license_automobile" accept="image/*" id="licenseAuto" data-file="true" />
+                                    <span class="form-hint">Upload driver license photo (JPEG, PNG, max 5MB)</span>
+                                    <div class="photo-preview-container" id="licenseAutoPreviewContainer">
+                                        <div class="photo-preview" id="licenseAutoPreview">
+                                            <span class="placeholder-icon">📄</span>
+                                            <div class="upload-hint-overlay"><span>Click to upload</span></div>
+                                        </div>
+                                        <div class="photo-info">
+                                            <span class="photo-name empty">No license uploaded</span>
+                                            <span class="photo-size">Click "Choose File" to upload</span>
+                                        </div>
+                                    </div>
+                                    <div id="licenseAutoStatus" class="upload-status" style="display: none;">
+                                        <span class="status-icon">✅</span>
+                                        <span>File selected</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Driver License (Motorcycle) -->
+                            <div class="form-group">
+                                <label>Driver License (Motorcycle) <span class="optional-badge">(Optional)</span></label>
+                                <div class="photo-upload-wrapper">
+                                    <input type="file" name="driver_license_motorcycle" accept="image/*" id="licenseMotor" data-file="true" />
+                                    <span class="form-hint">Upload driver license photo (JPEG, PNG, max 5MB)</span>
+                                    <div class="photo-preview-container" id="licenseMotorPreviewContainer">
+                                        <div class="photo-preview" id="licenseMotorPreview">
+                                            <span class="placeholder-icon">📄</span>
+                                            <div class="upload-hint-overlay"><span>Click to upload</span></div>
+                                        </div>
+                                        <div class="photo-info">
+                                            <span class="photo-name empty">No license uploaded</span>
+                                            <span class="photo-size">Click "Choose File" to upload</span>
+                                        </div>
+                                    </div>
+                                    <div id="licenseMotorStatus" class="upload-status" style="display: none;">
+                                        <span class="status-icon">✅</span>
+                                        <span>File selected</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Device Password -->
+                            <div class="form-group">
+                                <label>Device Password <span class="optional-badge">(Optional)</span></label>
+                                <input type="password" id="devicePassword" name="device_password" placeholder="Device password" data-password="true" />
+                                <span class="form-hint">Password for device access (min 6 characters)</span>
+                                <div class="error-message" id="devicePasswordError">Password must be at least 6 characters</div>
+                            </div>
+
+                            <!-- Self Password -->
+                            <div class="form-group">
+                                <label>Self Password <span class="optional-badge">(Optional)</span></label>
+                                <input type="password" id="selfPassword" name="self_password" placeholder="Self password" data-password="true" />
+                                <span class="form-hint">Password for self-service portal (min 6 characters)</span>
+                                <div class="error-message" id="selfPasswordError">Password must be at least 6 characters</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== PROFILE PHOTO - Circular Design ===== -->
+                    <div class="form-section">
+                        <div class="form-section-title">📸 Profile Photo</div>
+                        <div class="profile-photo-wrapper" onclick="document.getElementById('profilePhotoInput').click()">
+                            <input type="file" name="photo" accept="image/*" id="profilePhotoInput" data-file="true" />
+                            
+                            <div class="profile-photo-circle" id="profilePhotoPreview">
+                                <span class="placeholder-icon">👤</span>
+                                <div class="upload-hint-overlay"><span>Click to upload</span></div>
+                            </div>
+                            
+                            <div class="profile-photo-info">
+                                <span class="photo-name empty">No photo uploaded</span>
+                                <br>
+                                <span class="photo-size">Optional. Upload a profile picture for better identification.</span>
+                                <div class="profile-photo-actions">
+                                    <span class="profile-photo-status-badge empty">Empty</span>
+                                </div>
+                            </div>
+                            <div id="profilePhotoStatus" class="upload-status" style="display: none;">
+                                <span class="status-icon">✅</span>
+                                <span>File selected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== EMPLOYMENT DETAILS ===== -->
+                    <div class="form-section">
+                        <div class="form-section-title">💼 Employment Details</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Status <span class="required-star">*</span></label>
+                                <select id="status" name="status" required data-required="true">
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                    <option value="2">On Leave</option>
+                                    <option value="3">Terminated</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Employee Type <span class="optional-badge">(Optional)</span></label>
+                                <select id="empType" name="emp_type">
+                                    <option value="">Select Type</option>
+                                    <option value="1">Full Time</option>
+                                    <option value="2">Part Time</option>
+                                    <option value="3">Contractor</option>
+                                    <option value="4">Intern</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Hire Date <span class="optional-badge">(Optional)</span></label>
+                                <input type="date" id="hireDate" name="hire_date" />
+                            </div>
+                            <div class="form-group">
+                                <label>App Role <span class="optional-badge">(Optional)</span></label>
+                                <select id="appRole" name="app_role">
+                                    <option value="">Select Role</option>
+                                    <option value="1">Administrator</option>
+                                    <option value="2">Manager</option>
+                                    <option value="3">Staff</option>
+                                    <option value="4">User</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Department <span class="optional-badge">(Optional)</span></label>
+                                <select id="department" name="department_id">
+                                    <option value="">No Department</option>
+                                    <option th:each="dept : ${departments}" 
+                                            th:value="${dept.id}" 
+                                            th:text="${dept.getdept_name()}">
+                                    </option>
+                                </select>
+                                <span class="form-hint">Select a department to assign this employee to</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Position <span class="optional-badge">(Optional)</span></label>
+                                <input type="text" id="position" name="position_id" placeholder="Position ID or title" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== ACCOUNT STATUS ===== -->
+                    <div class="form-section">
+                        <div class="form-section-title">⚙️ Account Status</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Active Status <span class="required-star">*</span></label>
+                                <select id="isActive" name="is_active" required>
+                                    <option value="true">Active</option>
+                                    <option value="false">Inactive</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Enable Payroll <span class="optional-badge">(Optional)</span></label>
+                                <select id="enablePayroll" name="enable_payroll">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                   
                 </div>
 
+                <!-- Submit Buttons -->
                 <div style="display: flex; gap: 12px; margin-top: 28px; padding-top: 20px; border-top: 1px solid #e9ecef; justify-content: flex-end;">
-                    <a href="/dashboard/Users" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-decoration: none; background: #f1f3f5; color: #1a1a2e; border: 1px solid #e9ecef;">Cancel</a>
-                    <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; background: linear-gradient(135deg, #2f79ff, #ff9f2d); color: white; box-shadow: 0 4px 15px rgba(47, 121, 255, 0.3); font-family: 'Inter', Arial, sans-serif;">
+                    <a href="/dashboard/Employees" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-decoration: none; background: #f1f3f5; color: #1a1a2e; border: 1px solid #e9ecef;">Cancel</a>
+                    <button type="submit" id="submitBtn" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; background: linear-gradient(135deg, #2f79ff, #ff9f2d); color: white; box-shadow: 0 4px 15px rgba(47, 121, 255, 0.3); font-family: 'Inter', Arial, sans-serif;">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                         </svg>
-                        Create User
+                        Create Employee
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- JavaScript Validation -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('employeeForm');
+            
+            // Real-time validation on input
+            const inputs = form.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('error') || this.classList.contains('success')) {
+                        validateField(this);
+                    }
+                });
+            });
+
+            // Auto-generate nickname
+            const firstName = document.getElementById('firstName');
+            const lastName = document.getElementById('lastName');
+            const nickname = document.getElementById('nickname');
+            
+            function generateNickname() {
+                if (!nickname.value.trim() && firstName.value.trim() && lastName.value.trim()) {
+                    const firstLetter = firstName.value.trim().charAt(0).toLowerCase();
+                    const last = lastName.value.trim().toLowerCase();
+                    nickname.value = firstLetter + last;
+                }
+            }
+            
+            firstName.addEventListener('blur', generateNickname);
+            lastName.addEventListener('blur', generateNickname);
+
+            // Phone number formatting
+            const phoneInputs = document.querySelectorAll('[data-phone="true"]');
+            phoneInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '');
+                    if (this.value.length > 10) {
+                        this.value = this.value.slice(0, 10);
+                    }
+                });
+            });
+
+            // File preview for profile photo
+            const profileInput = document.getElementById('profilePhotoInput');
+            if (profileInput) {
+                profileInput.addEventListener('change', function() {
+                    previewProfilePhoto(this);
+                });
+            }
+
+            // File preview for licenses
+            const licenseInputs = document.querySelectorAll('#licenseAuto, #licenseMotor');
+            licenseInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    previewLicenseFile(this);
+                });
+            });
+        });
+
+        // ===== PROFILE PHOTO PREVIEW =====
+        function previewProfilePhoto(input) {
+            const file = input.files[0];
+            if (file) {
+                const preview = document.getElementById('profilePhotoPreview');
+                const status = document.getElementById('profilePhotoStatus');
+                const nameSpan = document.querySelector('.profile-photo-info .photo-name');
+                const badgeSpan = document.querySelector('.profile-photo-info .profile-photo-status-badge');
+                
+                // Validate file
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    input.value = '';
+                    return;
+                }
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please upload a valid image (JPEG, PNG, GIF, or WEBP)');
+                    input.value = '';
+                    return;
+                }
+                
+                if (preview) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.className = 'profile-photo-circle has-image';
+                        preview.innerHTML = `
+                            <img src="${e.target.result}" alt="${file.name}" />
+                            <div class="upload-hint-overlay"><span>Click to change</span></div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                }
+                
+                if (nameSpan) {
+                    nameSpan.textContent = file.name;
+                    nameSpan.className = 'photo-name';
+                }
+                if (badgeSpan) {
+                    badgeSpan.textContent = 'New';
+                    badgeSpan.className = 'profile-photo-status-badge';
+                    badgeSpan.style.background = '#dcfce7';
+                    badgeSpan.style.color = '#16a34a';
+                }
+                
+                if (status) {
+                    status.style.display = 'flex';
+                    status.className = 'upload-status success';
+                    status.innerHTML = `
+                        <span class="status-icon">✅</span>
+                        <span>Photo selected: ${file.name}</span>
+                    `;
+                }
+            }
+        }
+
+        // ===== LICENSE FILE PREVIEW =====
+        function previewLicenseFile(input) {
+            const file = input.files[0];
+            if (file) {
+                const preview = document.getElementById(input.id + 'Preview');
+                const container = document.getElementById(input.id + 'PreviewContainer');
+                const status = document.getElementById(input.id + 'Status');
+                
+                // Validate file
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    input.value = '';
+                    return;
+                }
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please upload a valid image (JPEG, PNG, GIF, or WEBP)');
+                    input.value = '';
+                    return;
+                }
+                
+                if (preview) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.className = 'photo-preview has-image';
+                        preview.innerHTML = `
+                            <img src="${e.target.result}" alt="${file.name}" />
+                            <div class="upload-hint-overlay"><span>Click to change</span></div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                }
+                
+                if (container) {
+                    const nameSpan = container.querySelector('.photo-name');
+                    const sizeSpan = container.querySelector('.photo-size');
+                    
+                    if (nameSpan) {
+                        nameSpan.textContent = file.name;
+                        nameSpan.className = 'photo-name';
+                    }
+                    if (sizeSpan) {
+                        sizeSpan.textContent = (file.size / 1024).toFixed(1) + ' KB';
+                    }
+                }
+                
+                if (status) {
+                    status.style.display = 'flex';
+                    status.className = 'upload-status success';
+                    status.innerHTML = `
+                        <span class="status-icon">✅</span>
+                        <span>File selected: ${file.name}</span>
+                    `;
+                }
+            }
+        }
+
+        // ===== FIELD VALIDATION =====
+        function validateField(field) {
+            const id = field.id;
+            const errorElement = document.getElementById(id + 'Error');
+            
+            field.classList.remove('error', 'success');
+            if (errorElement) {
+                errorElement.classList.remove('show');
+            }
+            
+            if (!field.dataset.required && !field.value.trim()) {
+                return true;
+            }
+            
+            let isValid = true;
+            
+            if (field.dataset.required && !field.value.trim()) {
+                isValid = false;
+                field.classList.add('error');
+                if (errorElement) errorElement.classList.add('show');
+                return false;
+            }
+            
+            if (field.dataset.email && field.value.trim()) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(field.value.trim())) {
+                    isValid = false;
+                    field.classList.add('error');
+                    if (errorElement) errorElement.classList.add('show');
+                    return false;
+                }
+            }
+            
+            if (field.dataset.phone && field.value.trim()) {
+                const phoneRegex = /^[0-9]{10}$/;
+                const cleanPhone = field.value.trim().replace(/\D/g, '');
+                if (!phoneRegex.test(cleanPhone)) {
+                    isValid = false;
+                    field.classList.add('error');
+                    if (errorElement) errorElement.classList.add('show');
+                    return false;
+                }
+            }
+            
+            if (field.dataset.password && field.value.trim()) {
+                if (field.value.trim().length < 6) {
+                    isValid = false;
+                    field.classList.add('error');
+                    if (errorElement) errorElement.classList.add('show');
+                    return false;
+                }
+            }
+            
+            if (field.dataset.file && field.files && field.files.length > 0) {
+                const file = field.files[0];
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    isValid = false;
+                    field.classList.add('error');
+                    if (errorElement) errorElement.classList.add('show');
+                    return false;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    isValid = false;
+                    field.classList.add('error');
+                    if (errorElement) errorElement.classList.add('show');
+                    return false;
+                }
+            }
+            
+            if (isValid && field.value.trim()) {
+                field.classList.add('success');
+            }
+            
+            return isValid;
+        }
+
+        // ===== FORM VALIDATION =====
+        function validateForm(event) {
+            event.preventDefault();
+            
+            const summary = document.getElementById('validationSummary');
+            const errorList = document.getElementById('errorList');
+            summary.classList.remove('show');
+            errorList.innerHTML = '';
+            
+            const form = document.getElementById('employeeForm');
+            const fields = form.querySelectorAll('[data-required="true"], [data-email="true"], [data-phone="true"], [data-password="true"], [data-file="true"]');
+            
+            let isValid = true;
+            let errorMessages = [];
+            
+            fields.forEach(field => {
+                const fieldIsValid = validateField(field);
+                if (!fieldIsValid) {
+                    isValid = false;
+                    const label = field.closest('.form-group').querySelector('label');
+                    const fieldName = label ? label.textContent.trim().replace('*', '').trim() : field.name;
+                    const errorElement = document.getElementById(field.id + 'Error');
+                    if (errorElement) {
+                        errorMessages.push(fieldName + ': ' + errorElement.textContent.trim());
+                    } else {
+                        errorMessages.push(fieldName + ' is invalid');
+                    }
+                }
+            });
+            
+            if (!isValid) {
+                summary.classList.add('show');
+                errorMessages.forEach(msg => {
+                    const li = document.createElement('li');
+                    li.textContent = msg;
+                    errorList.appendChild(li);
+                });
+                summary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+            
+            submitForm();
+            return true;
+        }
+
+        // ===== SUBMIT FORM WITH LOADING STATE =====
+        function submitForm() {
+            const submitBtn = document.getElementById('submitBtn');
+            
+            submitBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Creating Employee...</span>
+            `;
+            submitBtn.classList.add('btn-loading');
+            submitBtn.disabled = true;
+            
+            document.getElementById('employeeForm').submit();
+        }
+
+        // ===== KEYBOARD SHORTCUT: ESC TO CLEAR =====
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const activeElement = document.activeElement;
+                if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                    activeElement.value = '';
+                    activeElement.classList.remove('error', 'success');
+                    const errorElement = document.getElementById(activeElement.id + 'Error');
+                    if (errorElement) {
+                        errorElement.classList.remove('show');
+                    }
+                }
+            }
+        });
+
+        console.log('✅ Form validation initialized successfully');
+        console.log('📋 Validation rules:');
+        console.log('   - Required: First Name, Last Name, Email, Status, Active Status');
+        console.log('   - Email: Valid email format required');
+        console.log('   - Phone: 10 digits required');
+        console.log('   - Password: Minimum 6 characters');
+        console.log('   - Photo: Max 5MB, JPEG/PNG/GIF/WEBP');
+        console.log('   - Auto-generate nickname from first and last name');
+    </script>
 </body>
 </html>

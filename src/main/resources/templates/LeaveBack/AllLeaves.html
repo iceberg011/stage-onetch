@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>All Leaves - OneTech</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* ===== STATUS BADGES ===== */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+        }
+        .status-pending {
+            background: rgba(255, 159, 45, 0.15);
+            color: #ff9f2d;
+            border: 1px solid rgba(255, 159, 45, 0.2);
+        }
+        .status-approved {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .status-cancelled {
+            background: rgba(108, 117, 125, 0.15);
+            color: #6c757d;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+        }
+
+        /* ===== TABLE CONTAINER ===== */
+        .table-container {
+            overflow-x: auto;
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1100px;
+        }
+        thead {
+            background: #f8f9fa;
+        }
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            font-weight: 600;
+            border-bottom: 1px solid #e9ecef;
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f3f5;
+            color: #1a1a2e;
+            vertical-align: middle;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* ===== EMPLOYEE INFO ===== */
+        .employee-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+        }
+        .employee-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .employee-name {
+            font-weight: 500;
+            color: #1a1a2e;
+            cursor: pointer;
+        }
+        .employee-name:hover {
+            color: #2f79ff;
+        }
+        .employee-email {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-btn {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+        .action-view {
+            background: rgba(47, 121, 255, 0.1);
+            color: #2f79ff;
+        }
+        .action-view:hover {
+            background: rgba(47, 121, 255, 0.2);
+        }
+        .action-edit {
+            background: rgba(255, 159, 45, 0.1);
+            color: #ff9f2d;
+        }
+        .action-edit:hover {
+            background: rgba(255, 159, 45, 0.2);
+        }
+        .action-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        .action-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+        .action-approve {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+        .action-approve:hover {
+            background: rgba(34, 197, 94, 0.2);
+        }
+        .action-reject {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        .action-reject:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* ===== STATS GRID ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stat-card .stat-label {
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .stat-value {
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 2px;
+            color: #1a1a2e;
+        }
+        .stat-card .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-value.pending { color: #ff9f2d; }
+        .stat-value.approved { color: #22c55e; }
+        .stat-value.rejected { color: #ef4444; }
+        .stat-value.total { color: #2f79ff; }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+        .search-bar form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        .search-bar input,
+        .search-bar select {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            background: #ffffff;
+            color: #1a1a2e;
+            font-size: 0.9rem;
+            outline: none;
+            min-width: 140px;
+        }
+        .search-bar input:focus,
+        .search-bar select:focus {
+            border-color: #2f79ff;
+            box-shadow: 0 0 0 3px rgba(47, 121, 255, 0.1);
+        }
+        .search-bar .search-input {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .search-bar .search-input input {
+            padding-left: 36px;
+            width: 100%;
+        }
+        .search-bar .search-input svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-search {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #2f79ff, #1a5fd8);
+            color: white;
+            box-shadow: 0 4px 15px rgba(47, 121, 255, 0.2);
+        }
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(47, 121, 255, 0.3);
+        }
+        .btn-clear {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            background: #f1f3f5;
+            color: #1a1a2e;
+            border: 1px solid #e9ecef;
+        }
+        .btn-clear:hover {
+            background: #e9ecef;
+        }
+        .btn-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            color: white;
+            box-shadow: 0 4px 15px rgba(47, 121, 255, 0.3);
+        }
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(47, 121, 255, 0.4);
+        }
+
+        /* ===== AI RESPONSE BUTTON ===== */
+        .btn-ai {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-ai:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+        .btn-ai .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .btn-ai.loading .spinner {
+            display: inline-block;
+        }
+        .btn-ai.loading .ai-text {
+            display: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== AI RESPONSE MODAL ===== */
+        .ai-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+        .ai-modal-overlay.open {
+            display: flex;
+        }
+        .ai-modal {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 700px;
+            width: 95%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .ai-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .ai-modal-header h2 {
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            font-size: 1.4rem;
+            color: #1a1a2e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ai-modal-header h2 .ai-icon {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            border-radius: 50%;
+            padding: 6px;
+            font-size: 1.2rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ai-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: #6c757d;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 0 8px;
+        }
+        .ai-modal-close:hover { color: #1a1a2e; }
+        .ai-response-content {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            color: #1a1a2e;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            font-family: "Inter", Arial, sans-serif;
+            min-height: 100px;
+        }
+        .ai-response-content .typing {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #8b5cf6;
+            animation: typing 1.4s infinite;
+        }
+        .ai-response-content .typing:nth-child(2) { animation-delay: 0.2s; }
+        .ai-response-content .typing:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .page-header .left h2 {
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 4px;
+            color: #1a1a2e;
+        }
+        .page-header .left p {
+            color: #6c757d;
+        }
+        .page-header .right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* ===== ACTIVE FILTERS ===== */
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e9ecef;
+        }
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+        }
+        .filter-tag-search {
+            background: #e8f4fd;
+            color: #2f79ff;
+        }
+        .filter-tag-status {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .filter-tag a { text-decoration: none; }
+        .filter-tag-search a { color: #2f79ff; }
+        .filter-tag-status a { color: #059669; }
+
+        /* ===== SUMMARY BAR ===== */
+        .summary-bar {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #e8f4fd;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #1a1a2e;
+            border: 1px solid #2f79ff;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+        .empty-state h3 {
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        /* ===== EMPLOYEE POPUP MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open {
+            display: flex !important;
+        }
+        .modal {
+            background: #ffffff;
+            border-radius: 20px;
+            width: 92%;
+            max-width: 900px;
+            max-height: 92vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            padding: 20px 28px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            background: #f8f9fa;
+        }
+        .modal-header h2 {
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            margin: 0;
+            color: #1a1a2e;
+        }
+        .modal-header h2 .highlight {
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #6c757d;
+            padding: 0 8px;
+            line-height: 1;
+            transition: color 0.3s;
+        }
+        .modal-close:hover { color: #1a1a2e; }
+        .modal-body {
+            padding: 24px 28px;
+            overflow-y: auto;
+            flex: 1;
+            background: #ffffff;
+        }
+        .modal-footer {
+            padding: 16px 28px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-shrink: 0;
+            background: #f8f9fa;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2f79ff, #1a5fd8);
+            color: white;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(47, 121, 255, 0.3);
+        }
+        .btn-secondary {
+            background: #f1f3f5;
+            color: #1a1a2e;
+            padding: 8px 18px;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        /* ===== MODAL CONTENT ===== */
+        .employee-profile {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 16px 0 20px;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        .employee-profile .avatar-large {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2f79ff, #ff9f2d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        .employee-profile .info h3 {
+            font-size: 1.2rem;
+            margin: 0 0 4px;
+            color: #1a1a2e;
+        }
+        .employee-profile .info p {
+            color: #6c757d;
+            margin: 2px 0;
+            font-size: 0.9rem;
+        }
+        .employee-profile .info .emp-code {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .modal-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .modal-stat {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px 16px;
+            text-align: center;
+        }
+        .modal-stat .number {
+            font-family: 'Space Grotesk', Arial, sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+        .modal-stat .label {
+            font-size: 0.7rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .modal-stat .number.blue { color: #2f79ff; }
+        .modal-stat .number.green { color: #22c55e; }
+        .modal-stat .number.yellow { color: #ff9f2d; }
+        .modal-stat .number.red { color: #ef4444; }
+        .modal-stat .number.purple { color: #8b5cf6; }
+
+        .modal-table-wrapper {
+            overflow-x: auto;
+            margin-top: 8px;
+        }
+        .modal-table-wrapper table {
+            min-width: 500px;
+            font-size: 0.85rem;
+        }
+        .modal-table-wrapper thead th {
+            padding: 10px 12px;
+            font-size: 0.65rem;
+        }
+        .modal-table-wrapper tbody td {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin: 16px 0 12px;
+        }
+        .section-title .count {
+            color: #6c757d;
+            font-weight: 400;
+            font-size: 0.85rem;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        .no-data .icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .search-bar form {
+                flex-direction: column;
+            }
+            .search-bar .search-input {
+                width: 100%;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .page-header .right {
+                width: 100%;
+            }
+            .page-header .right .btn-add,
+            .page-header .right .btn-ai {
+                flex: 1;
+                justify-content: center;
+            }
+            .modal {
+                width: 96%;
+                max-height: 95vh;
+            }
+            .modal-header {
+                padding: 16px 20px;
+                flex-wrap: wrap;
+            }
+            .modal-header h2 {
+                font-size: 1.2rem;
+            }
+            .modal-body {
+                padding: 16px 20px;
+            }
+            .employee-profile {
+                flex-direction: column;
+                text-align: center;
+            }
+            .modal-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .modal-footer {
+                flex-direction: column;
+            }
+            .modal-footer .btn {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="left">
+                <h2>All Leaves</h2>
+                <p>View and manage all leave requests in the system</p>
+            </div>
+            <div class="right">
+                <!-- AI Response Button -->
+                <form th:action="@{/dashboard/leaves/ai-review}" method="post" style="display:inline;">
+                    <button class="btn-ai" id="aiButton" type="submit">
+                        <span class="spinner"></span>
+                        <span class="ai-text">🤖 AI Insights</span>
+                    </button>
+                </form>
+                <a href="/dashboard/leaves/create" class="btn-add">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    New Leave
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Total Leaves</div>
+                    <div class="stat-value total" th:text="${leaveCount}">0</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(47, 121, 255, 0.12); color: #2f79ff;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5 0a6 6 0 00-13 0m13.5 0h.008v.008h-.008v-.008zm-13.5 0h.008v.008h-.008v-.008z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value pending" th:text="${pendingCount}">0</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(255, 159, 45, 0.12); color: #ff9f2d;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Approved</div>
+                    <div class="stat-value approved" th:text="${approvedCount}">0</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(34, 197, 94, 0.12); color: #22c55e;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Rejected</div>
+                    <div class="stat-value rejected" th:text="${rejectedCount}">0</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Total Days</div>
+                    <div class="stat-value total" th:text="${totalLeaveDays}">0</div>
+                </div>
+                <div class="stat-icon" style="background: rgba(47, 121, 255, 0.12); color: #2f79ff;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <form method="get" action="/dashboard/leaves">
+                <div class="search-input">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="search" placeholder="Search by employee name or reason..." th:value="${searchQuery}" />
+                </div>
+
+                <select name="status">
+                    <option value="all" th:selected="${selectedStatus == null or selectedStatus == 'all'}">All Status</option>
+                    <option value="pending" th:selected="${selectedStatus == 'pending'}">Pending</option>
+                    <option value="approved" th:selected="${selectedStatus == 'approved'}">Approved</option>
+                    <option value="rejected" th:selected="${selectedStatus == 'rejected'}">Rejected</option>
+                    <option value="cancelled" th:selected="${selectedStatus == 'cancelled'}">Cancelled</option>
+                </select>
+
+                <select name="sort">
+                    <option value="desc" th:selected="${selectedSort == null or selectedSort == 'desc'}">Newest First</option>
+                    <option value="asc" th:selected="${selectedSort == 'asc'}">Oldest First</option>
+                </select>
+
+                <button type="submit" class="btn-search">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Search
+                </button>
+
+                <a href="/dashboard/leaves" class="btn-clear">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Clear
+                </a>
+            </form>
+
+            <!-- Active Filters Display -->
+            <div th:if="${searchQuery != null or selectedStatus != null}" class="active-filters">
+                <span style="font-size: 0.85rem; color: #6c757d; display: flex; align-items: center;">Active Filters:</span>
+                
+                <span th:if="${searchQuery != null}" class="filter-tag filter-tag-search">
+                    Search: <strong th:text="${searchQuery}"></strong>
+                    <a th:href="'/dashboard/leaves?search=&status=' + ${selectedStatus} + '&sort=' + ${selectedSort}">✕</a>
+                </span>
+                
+                <span th:if="${selectedStatus != null and selectedStatus != 'all'}" class="filter-tag filter-tag-status">
+                    Status: <strong th:text="${selectedStatus}"></strong>
+                    <a th:href="'/dashboard/leaves?search=' + ${searchQuery} + '&status=all' + '&sort=' + ${selectedSort}">✕</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Leaves Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">#</th>
+                        <th>Employee</th>
+                        <th>Code</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Days</th>
+                        <th>Reason</th>
+                        <th style="text-align: center;">Status</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item, iterStat : ${leaves}" th:if="${leaves != null and not leaves.isEmpty()}">
+                        <td style="text-align: center; font-weight: 600; color: #6c757d;" th:text="${iterStat.index + 1}">1</td>
+                        
+                        <td>
+                            <div class="employee-info">
+                                <div class="employee-avatar" 
+                                     th:text="${item.employeeName != null ? #strings.substring(item.employeeName, 0, 1) : 'U'}">
+                                </div>
+                                <div>
+                                    <div class="employee-name" th:text="${item.employeeName != null ? item.employeeName : 'N/A'}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td>
+                            <span style="font-weight: 600; color: #2f79ff; font-size: 0.85rem;" th:text="${item.employeeCode != null ? item.employeeCode : 'N/A'}"></span>
+                        </td>
+                        
+                        <td th:text="${#temporals.format(item.startTime, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td th:text="${item.leaveDay}"></td>
+                        <td>
+                            <span th:text="${item.applyReason != null and item.applyReason.length() > 30 ? item.applyReason.substring(0, 30) + '...' : item.applyReason}"></span>
+                        </td>
+                        
+                        <td style="text-align: center;">
+                            <span class="status-badge" 
+                                  th:classappend="${item.status == null or item.status == 0 ? 'status-pending' : 
+                                                 (item.status == 1 ? 'status-approved' : 
+                                                 (item.status == 2 ? 'status-rejected' : 'status-cancelled'))}"
+                                  th:text="${item.status == null or item.status == 0 ? 'Pending' : 
+                                          (item.status == 1 ? 'Approved' : 
+                                          (item.status == 2 ? 'Rejected' : 'Cancelled'))}">
+                                Pending
+                            </span>
+                        </td>
+
+                        
+                        <td style="text-align: right;">
+                    <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+                        <!-- View button - opens popup -->
+                        <a th:data-employeeid="${item.employeeId}"
+                        class="action-btn action-view" 
+                        onclick="openEmployeePopup(this.getAttribute('data-employeeid')); return false;"
+                        style="cursor: pointer; text-decoration: none; display: inline-block;">
+                            View
+                        </a>
+
+                        <!-- Admin actions for pending -->
+                        <div th:if="${isAdmin and (item.status == null or item.status == 0)}">
+                            <a th:href="'/dashboard/leaves/approve/' + ${item.id}" class="action-btn action-approve" 
+                            onclick="return confirm('Approve this leave request?')">Approve</a>
+                            <a th:href="'/dashboard/leaves/reject/' + ${item.id}" class="action-btn action-reject" 
+                            onclick="return confirm('Reject this leave request?')">Reject</a>
+                        </div>
+
+                        <div th:if="${item.status == null or item.status == 0}">
+                            <a th:href="'/dashboard/leaves/edit/' + ${item.id}" class="action-btn action-edit">Edit</a>
+                            <a th:href="'/dashboard/leaves/delete/' + ${item.id}" class="action-btn action-delete" 
+                            onclick="return confirm('Are you sure you want to delete this leave request?')">Delete</a>
+                        </div>
+                    </div>
+                </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- No Leaves Message -->
+        <div th:if="${leaves == null or leaves.isEmpty()}" class="empty-state">
+            <div class="icon">📋</div>
+            <h3>No leave requests found</h3>
+            <p th:text="${searchQuery != null} ? 'No leave requests match your search criteria.' : 'There are no leave requests in the system yet.'"></p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+                <a th:if="${searchQuery != null}" href="/dashboard/leaves" class="btn-clear">Clear Filters</a>
+                <a href="/dashboard/leaves/create" class="btn-add">Create your first request</a>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div th:if="${leaves != null and not leaves.isEmpty()}" class="summary-bar">
+            <span><strong>📊 Total:</strong> <span th:text="${leaveCount}"></span></span>
+            <span><strong>⏳ Pending:</strong> <span th:text="${pendingCount}"></span></span>
+            <span><strong>✅ Approved:</strong> <span th:text="${approvedCount}"></span></span>
+            <span><strong>❌ Rejected:</strong> <span th:text="${rejectedCount}"></span></span>
+            <span><strong>📅 Total Days:</strong> <span th:text="${totalLeaveDays}"></span></span>
+            <span th:if="${searchQuery != null}"><strong>🔍 Search:</strong> <span th:text="${searchQuery}"></span></span>
+            <span th:if="${selectedStatus != null and selectedStatus != 'all'}"><strong>📌 Status:</strong> <span th:text="${selectedStatus}"></span></span>
+        </div>
+    </div>
+
+    <!-- ===== EMPLOYEE DETAILS POPUP MODAL ===== -->
+    <div class="modal-overlay" id="employeeModal">
+        <div class="modal">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h2>👤 Employee <span class="highlight">Details</span></h2>
+                <div class="modal-actions">
+                    <button onclick="exportEmployeePDF()" class="btn-primary">
+                        📄 Export PDF
+                    </button>
+                    <button class="modal-close" onclick="closeEmployeePopup()">&times;</button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body" id="employeeDetailsContent">
+                <!-- Loading State -->
+                <div id="loadingState" style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 2.5rem; margin-bottom: 16px;">⏳</div>
+                    <p style="color: #6c757d;">Loading employee details...</p>
+                </div>
+
+                <!-- Content -->
+                <div id="employeeContent" style="display: none;">
+                    <!-- Employee Profile -->
+                    <div class="employee-profile">
+                        <div class="avatar-large" id="modalAvatar">J</div>
+                        <div class="info">
+                            <h3 id="modalEmployeeName">John Doe</h3>
+                            <p id="modalEmployeeEmail">📧 john.doe@company.com</p>
+                            <p id="modalEmployeePhone">📞 +123 456 7890</p>
+                            <p class="emp-code" id="modalEmployeeCode">🏷️ Emp Code: EMP001</p>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <div class="number blue" id="totalLeaves">0</div>
+                            <div class="label">Total Leaves</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="number yellow" id="pendingLeaves">0</div>
+                            <div class="label">Pending</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="number green" id="approvedLeaves">0</div>
+                            <div class="label">Approved</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="number red" id="rejectedLeaves">0</div>
+                            <div class="label">Rejected</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="number purple" id="totalDays">0.0</div>
+                            <div class="label">Total Days</div>
+                        </div>
+                    </div>
+
+                    <!-- Leave History -->
+                    <div class="section-title">
+                        📋 Leave History <span class="count" id="leaveCount">(0)</span>
+                    </div>
+                    <div class="modal-table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Days</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Applied</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaveHistoryBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="noLeaveHistory" style="display: none;">
+                        <div class="no-data">
+                            <span class="icon">📭</span>
+                            <p>No leave history found for this employee.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button onclick="closeEmployeePopup()" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== AI RESPONSE MODAL ===== -->
+    <div class="ai-modal-overlay" id="aiModal" th:if="${param.success != null or param.error != null}">
+        <div class="ai-modal">
+            <div class="ai-modal-header">
+                <h2>
+                    <span class="ai-icon">🤖</span>
+                    AI Insights
+                </h2>
+                <button class="ai-modal-close" onclick="closeAIModal()">✕</button>
+            </div>
+            <div class="ai-response-content" id="aiResponseContent">
+                <span th:if="${param.success != null}">AI review completed successfully.</span>
+                <span th:if="${param.error != null}">AI review could not complete. Please try again.</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function closeAIModal() {
+            document.getElementById('aiModal')?.classList.remove('open');
+            document.getElementById('aiButton')?.classList.remove('loading');
+        }
+
+        document.getElementById('aiModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAIModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAIModal();
+                closeEmployeePopup();
+            }
+        });
+
+        // ===== OPEN EMPLOYEE POPUP =====
+        function openEmployeePopup(employeeId) {
+            console.log('Opening employee popup for ID:', employeeId);
+            
+            if (!employeeId) {
+                alert('Invalid employee ID');
+                return;
+            }
+            
+            const modal = document.getElementById('employeeModal');
+            const loadingState = document.getElementById('loadingState');
+            const content = document.getElementById('employeeContent');
+
+            if (!modal) {
+                console.error('Modal not found!');
+                return;
+            }
+
+            // Reset and show loading
+            modal.classList.add('open');
+            loadingState.style.display = 'block';
+            content.style.display = 'none';
+            document.body.style.overflow = 'hidden';
+
+            // Store employee ID for PDF export
+            modal.dataset.employeeId = employeeId;
+
+            // Fetch employee details
+            fetch('/api/employee/' + employeeId + '/details')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch employee details: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Employee data received:', data);
+                    populateEmployeeModal(data);
+                    loadingState.style.display = 'none';
+                    content.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching employee details:', error);
+                    loadingState.innerHTML = `
+                        <div style="font-size: 2.5rem; margin-bottom: 16px;">❌</div>
+                        <p style="color: #ef4444;">Error loading employee details</p>
+                        <p style="color: #6c757d; font-size: 0.9rem;">${error.message}</p>
+                        <button onclick="closeEmployeePopup()" class="btn-secondary" style="margin-top: 16px;">Close</button>
+                    `;
+                });
+        }
+
+        // ===== POPULATE EMPLOYEE MODAL =====
+        function populateEmployeeModal(data) {
+            // Employee info
+            document.getElementById('modalAvatar').textContent = data.fullName ? data.fullName.charAt(0).toUpperCase() : 'U';
+            document.getElementById('modalEmployeeName').textContent = data.fullName || 'N/A';
+            document.getElementById('modalEmployeeEmail').textContent = '📧 ' + (data.email || 'N/A');
+            document.getElementById('modalEmployeePhone').textContent = '📞 ' + (data.mobile || 'N/A');
+            document.getElementById('modalEmployeeCode').textContent = '🏷️ Emp Code: ' + (data.empCode || 'N/A');
+
+            // Leave history
+            const leaveHistory = data.leaveHistory || [];
+            const tbody = document.getElementById('leaveHistoryBody');
+            const noData = document.getElementById('noLeaveHistory');
+
+            // Calculate stats
+            let total = leaveHistory.length;
+            let pending = 0;
+            let approved = 0;
+            let rejected = 0;
+            let totalDays = 0;
+
+            tbody.innerHTML = '';
+
+            if (leaveHistory.length === 0) {
+                noData.style.display = 'block';
+                document.getElementById('leaveCount').textContent = '(0)';
+                document.getElementById('totalLeaves').textContent = '0';
+                document.getElementById('pendingLeaves').textContent = '0';
+                document.getElementById('approvedLeaves').textContent = '0';
+                document.getElementById('rejectedLeaves').textContent = '0';
+                document.getElementById('totalDays').textContent = '0.0';
+                return;
+            }
+
+            noData.style.display = 'none';
+
+            leaveHistory.forEach(leave => {
+                const status = leave.status || 'Pending';
+                if (status === 'Pending') pending++;
+                else if (status === 'Approved') approved++;
+                else if (status === 'Rejected') rejected++;
+                totalDays += leave.leaveDay || 0;
+
+                const startDate = leave.startTime ? new Date(leave.startTime).toLocaleDateString() : 'N/A';
+                const endDate = leave.endTime ? new Date(leave.endTime).toLocaleDateString() : 'N/A';
+                const applyDate = leave.applyTime ? new Date(leave.applyTime).toLocaleDateString() : 'N/A';
+
+                let statusClass = 'status-pending';
+                if (status === 'Approved') statusClass = 'status-approved';
+                else if (status === 'Rejected') statusClass = 'status-rejected';
+                else if (status === 'Cancelled') statusClass = 'status-cancelled';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${startDate}</td>
+                    <td>${endDate}</td>
+                    <td>${leave.leaveDay || 0}</td>
+                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${leave.applyReason || 'N/A'}</td>
+                    <td><span class="status-badge ${statusClass}">${status}</span></td>
+                    <td>${applyDate}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update stats
+            document.getElementById('leaveCount').textContent = `(${total})`;
+            document.getElementById('totalLeaves').textContent = total;
+            document.getElementById('pendingLeaves').textContent = pending;
+            document.getElementById('approvedLeaves').textContent = approved;
+            document.getElementById('rejectedLeaves').textContent = rejected;
+            document.getElementById('totalDays').textContent = totalDays.toFixed(1);
+        }
+
+        // ===== CLOSE EMPLOYEE POPUP =====
+        function closeEmployeePopup() {
+            const modal = document.getElementById('employeeModal');
+            modal.classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ===== EXPORT EMPLOYEE PDF =====
+        function exportEmployeePDF() {
+            const modal = document.getElementById('employeeModal');
+            const employeeId = modal.dataset.employeeId;
+
+            if (!employeeId) {
+                alert('No employee selected');
+                return;
+            }
+
+            // Open PDF in new window
+            window.open('/api/employee/' + employeeId + '/export-pdf', '_blank');
+        }
+
+        // ===== CLOSE MODAL ON OVERLAY CLICK =====
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('employeeModal');
+            if (event.target === modal) {
+                closeEmployeePopup();
+            }
+        });
+
+        // ===== MAKE FUNCTIONS GLOBALLY AVAILABLE =====
+        window.openEmployeePopup = openEmployeePopup;
+        window.closeEmployeePopup = closeEmployeePopup;
+        window.exportEmployeePDF = exportEmployeePDF;
+    </script>
+</body>
+</html>

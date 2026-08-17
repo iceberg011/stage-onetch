@@ -1,47 +1,47 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Entity.employees;
+import com.example.demo.Repository.EmployeesRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import com.example.demo.Entity.UserAccount;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import jakarta.servlet.http.HttpSession;
+import java.util.Optional;
 
 @Controller
 public class ProfileController {
 
-    @GetMapping("/dashboard/profile")
-    public String profile(HttpSession session, Model model) {
-        System.out.println("=== GET /dashboard/profile called ===");
+    @Autowired
+    private EmployeesRepository employeesRepository;
+
+    @GetMapping("/user/profile/{id}") // Changed from /dashboard/profile/{id}
+    public String viewProfile(@PathVariable Long id, HttpSession session, Model model) {
+        System.out.println("=== GET /user/profile/" + id + " called ===");
         
-        UserAccount user = (UserAccount) session.getAttribute("user");
+        employees currentEmployee = (employees) session.getAttribute("employee");
         
-        if (user == null) {
-            System.out.println("User not logged in, redirecting to signin");
+        if (currentEmployee == null) {
             return "redirect:/signin";
         }
         
-        // Set layout attributes
-        model.addAttribute("pageTitle", "My Profile");
-        model.addAttribute("pageContent", "UserProfile/AccountSettings");
+        Optional<employees> employeeOpt = employeesRepository.findById(id);
         
-        // User attributes
-        model.addAttribute("user", user);
-        model.addAttribute("userId", user.getId());
-        model.addAttribute("username", user.getUsername() != null ? user.getUsername() : "N/A");
-        model.addAttribute("email", user.getEmail() != null ? user.getEmail() : "N/A");
-        model.addAttribute("firstName", user.getFirst_name() != null ? user.getFirst_name() : "User");
-        model.addAttribute("lastName", user.getLast_name() != null ? user.getLast_name() : "");
-        model.addAttribute("loginCount", user.getLogin_count() != null ? user.getLogin_count() : 0);
-        model.addAttribute("isActive", user.getIs_active());
-        model.addAttribute("isSuperuser", user.getIs_superuser());
-        model.addAttribute("dateJoin", user.getDate_join() != null ? user.getDate_join() : "N/A");
-        model.addAttribute("lastLogin", user.getLast_login() != null ? user.getLast_login() : "N/A");
+        if (employeeOpt.isEmpty()) {
+            return "redirect:/dashboard/Employees?error=EmployeeNotFound";
+        }
         
-        // Phone number
-        Integer phoneNumber = user.gettele_phone();
-        model.addAttribute("phoneNumber", phoneNumber != null ? phoneNumber : "Not provided");
+        employees profileEmployee = employeeOpt.get();
+        
+        model.addAttribute("profileEmployee", profileEmployee);
+        model.addAttribute("pageTitle", "Employee Profile");
+        model.addAttribute("pageContent", "Employee/Profile");
+        model.addAttribute("firstName", currentEmployee.getFirst_name());
+        model.addAttribute("lastName", currentEmployee.getLast_name());
+        model.addAttribute("email", currentEmployee.getEmail());
+        model.addAttribute("nickname", currentEmployee.getNickname());
         
         return "Components/layout";
     }
