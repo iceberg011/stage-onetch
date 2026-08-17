@@ -5,44 +5,39 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
-@Table(name = "att_payloadattcode")
+@Table(name = "att_payloadeffectpunch")
 public class payload {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", columnDefinition = "UUID")
+    private UUID id;
 
     @Column(name = "att_date")
     private LocalDate attdate;
-    
-    private Short week;
-    private Short  weekday;
 
+    private Short week;
+    private Short weekday;
 
     @Column(name = "work_code", length = 20)
     private String workcode;
 
-
-    @Column(name = "punch_state")
-    private boolean punchstate;
+    @Column(name = "punch_state", length = 5)
+    private String punchstate;
 
     @Column(name = "punch_date")
     private LocalDate punchdate;
 
-     @Column(name = "punch_time")
+    @Column(name = "punch_time")
     private LocalTime punchtime;
 
     @Column(name = "punch_datetime")
     private LocalDateTime punchdatetime;
 
-
-
-
-
-
-    @Column(name = "adjust_state" , length = 5)
+    @Column(name = "adjust_state", length = 5)
     private String adjuststate;
 
     @Column(name = "emp_id")
@@ -51,22 +46,20 @@ public class payload {
     @Column(name = "trans_id")
     private Integer transid;
 
-    //uuid
     @Column(name = "time_card_id")
-    private Integer timecardid;
-
-
-
-
+    private UUID timecardid;
 
     // ===== DEFAULT CONSTRUCTOR =====
-    public payload() {}
+    public payload() {
+        this.id = UUID.randomUUID();
+    }
 
     // ===== PARAMETERIZED CONSTRUCTOR =====
     public payload(LocalDate attdate, Short week, Short weekday, String workcode,
-                   boolean punchstate, LocalDate punchdate, LocalTime punchtime,
+                   String punchstate, LocalDate punchdate, LocalTime punchtime,
                    LocalDateTime punchdatetime, String adjuststate, Integer empid,
-                   Integer transid, Integer timecardid) {
+                   Integer transid, UUID timecardid) {
+        this.id = UUID.randomUUID();
         this.attdate = attdate;
         this.week = week;
         this.weekday = weekday;
@@ -82,11 +75,11 @@ public class payload {
     }
 
     // ===== GETTERS AND SETTERS =====
-    public Integer getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -122,11 +115,12 @@ public class payload {
         this.workcode = workcode;
     }
 
-    public boolean isPunchstate() {
+    // FIXED: Getter returns String
+    public String getPunchstate() {
         return punchstate;
     }
 
-    public void setPunchstate(boolean punchstate) {
+    public void setPunchstate(String punchstate) {
         this.punchstate = punchstate;
     }
 
@@ -178,11 +172,11 @@ public class payload {
         this.transid = transid;
     }
 
-    public Integer getTimecardid() {
+    public UUID getTimecardid() {
         return timecardid;
     }
 
-    public void setTimecardid(Integer timecardid) {
+    public void setTimecardid(UUID timecardid) {
         this.timecardid = timecardid;
     }
 
@@ -190,16 +184,36 @@ public class payload {
 
     /**
      * Check if this is a punch-in record
+     * FIXED: Returns boolean, checks punchstate string
      */
     public boolean isPunchIn() {
-        return punchstate && workcode != null && workcode.equalsIgnoreCase("IN");
+        return punchstate != null && "IN".equalsIgnoreCase(punchstate) &&
+                workcode != null && "IN".equalsIgnoreCase(workcode);
     }
 
     /**
      * Check if this is a punch-out record
+     * FIXED: Returns boolean, checks punchstate string
      */
     public boolean isPunchOut() {
-        return punchstate && workcode != null && workcode.equalsIgnoreCase("OUT");
+        return punchstate != null && "OUT".equalsIgnoreCase(punchstate) &&
+                workcode != null && "OUT".equalsIgnoreCase(workcode);
+    }
+
+    /**
+     * Check if this is a valid punch (IN or OUT)
+     */
+    public boolean isValidPunch() {
+        return punchstate != null && ("IN".equalsIgnoreCase(punchstate) || "OUT".equalsIgnoreCase(punchstate));
+    }
+
+    /**
+     * Get punch type as string (IN, OUT, or N/A)
+     */
+    public String getPunchType() {
+        if (isPunchIn()) return "IN";
+        if (isPunchOut()) return "OUT";
+        return "N/A";
     }
 
     /**
@@ -259,7 +273,7 @@ public class payload {
                 ", week=" + week +
                 ", weekday=" + weekday +
                 ", workcode='" + workcode + '\'' +
-                ", punchstate=" + punchstate +
+                ", punchstate='" + punchstate + '\'' +
                 ", punchdate=" + punchdate +
                 ", punchtime=" + punchtime +
                 ", punchdatetime=" + punchdatetime +
@@ -269,5 +283,4 @@ public class payload {
                 ", timecardid=" + timecardid +
                 '}';
     }
-
 }

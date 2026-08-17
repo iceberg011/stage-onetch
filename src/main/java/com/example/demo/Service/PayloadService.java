@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.time.LocalTime;
 
 @Service
@@ -27,16 +28,24 @@ public class PayloadService {
     // ===== CREATE / UPDATE =====
     @Transactional
     public payload save(payload payload) {
+        if (payload.getId() == null) {
+            payload.setId(UUID.randomUUID());
+        }
         return payloadRepository.save(payload);
     }
 
     @Transactional
     public List<payload> saveAll(List<payload> payloads) {
+        for (payload p : payloads) {
+            if (p.getId() == null) {
+                p.setId(UUID.randomUUID());
+            }
+        }
         return payloadRepository.saveAll(payloads);
     }
 
     // ===== READ =====
-    public Optional<payload> findById(Integer id) {
+    public Optional<payload> findById(UUID id) {
         return payloadRepository.findById(id);
     }
 
@@ -64,19 +73,19 @@ public class PayloadService {
         return payloadRepository.findByDateRange(startDate, endDate);
     }
 
-    public List<payload> findByPunchstateTrue() {
-        return payloadRepository.findByPunchstateTrue();
+    public List<payload> findByPunchstate(String punchstate) {
+        return payloadRepository.findByPunchstate(punchstate);
     }
 
     public List<payload> findByWorkcode(String workcode) {
         return payloadRepository.findByWorkcode(workcode);
     }
 
-    public List<payload> findByEmpidAndPunchstateTrue(Integer empid) {
-        return payloadRepository.findByEmpidAndPunchstateTrue(empid);
+    public List<payload> findByEmpidAndPunchstate(Integer empid, String punchstate) {
+        return payloadRepository.findByEmpidAndPunchstate(empid, punchstate);
     }
 
-    public List<payload> findByTimecardid(Integer timecardid) {
+    public List<payload> findByTimecardid(UUID timecardid) {
         return payloadRepository.findByTimecardid(timecardid);
     }
 
@@ -94,14 +103,16 @@ public class PayloadService {
 
     // ===== DELETE =====
     @Transactional
-    public void deleteById(Integer id) {
+    public void deleteById(UUID id) {
         payloadRepository.deleteById(id);
     }
 
     @Transactional
     public void deleteByEmpid(Integer empid) {
         List<payload> records = payloadRepository.findByEmpid(empid);
-        payloadRepository.deleteAll(records);
+        if (records != null && !records.isEmpty()) {
+            payloadRepository.deleteAll(records);
+        }
     }
 
     @Transactional
@@ -110,12 +121,13 @@ public class PayloadService {
     }
 
     // ===== HELPERS =====
-    public boolean existsById(Integer id) {
+    public boolean existsById(UUID id) {
         return payloadRepository.existsById(id);
     }
 
     public long countByEmpid(Integer empid) {
-        return payloadRepository.findByEmpid(empid).size();
+        List<payload> records = payloadRepository.findByEmpid(empid);
+        return records != null ? records.size() : 0;
     }
 
     public long count() {
@@ -124,14 +136,14 @@ public class PayloadService {
 
     public payload getLatestPunch(Integer empid) {
         List<payload> latest = payloadRepository.findLatestByEmpid(empid);
-        return latest.isEmpty() ? null : latest.get(0);
+        return (latest != null && !latest.isEmpty()) ? latest.get(0) : null;
     }
 
     public boolean isPunchedIn(Integer empid) {
         List<payload> todayPunches = payloadRepository.findTodayByEmpid(empid);
-        if (todayPunches.isEmpty()) return false;
+        if (todayPunches == null || todayPunches.isEmpty()) return false;
         payload lastPunch = todayPunches.get(todayPunches.size() - 1);
-        return lastPunch.isPunchIn();
+        return lastPunch != null && lastPunch.isPunchIn();
     }
 
     // ===== GET PUNCHES WITH EMPLOYEE DATA =====
@@ -151,8 +163,11 @@ public class PayloadService {
         return payloadRepository.searchWithEmployee(search);
     }
 
-    // ===== DTO Helper - Get punch with employee details =====
+    // ===== DTO Helper =====
     public PunchWithEmployeeDTO getPunchWithEmployee(Object[] result) {
+        if (result == null || result.length < 2) {
+            return null;
+        }
         payload punch = (payload) result[0];
         employees employee = (employees) result[1];
         return new PunchWithEmployeeDTO(punch, employee);
@@ -176,23 +191,37 @@ public class PayloadService {
         public employees getEmployee() { return employee; }
         public String getEmployeeName() { return employeeName; }
         public String getEmployeeCode() { return employeeCode; }
-        public Integer getId() { return punch.getId(); }
-        public LocalDate getAttdate() { return punch.getAttdate(); }
-        public Short getWeek() { return punch.getWeek(); }
-        public Short getWeekday() { return punch.getWeekday(); }
-        public String getWorkcode() { return punch.getWorkcode(); }
-        public boolean isPunchstate() { return punch.isPunchstate(); }
-        public LocalDate getPunchdate() { return punch.getPunchdate(); }
-        public LocalTime getPunchtime() { return punch.getPunchtime(); }
-        public LocalDateTime getPunchdatetime() { return punch.getPunchdatetime(); }
-        public String getAdjuststate() { return punch.getAdjuststate(); }
-        public Integer getEmpid() { return punch.getEmpid(); }
-        public Integer getTransid() { return punch.getTransid(); }
-        public Integer getTimecardid() { return punch.getTimecardid(); }
-        public String getFormattedPunchDateTime() { return punch.getFormattedPunchDateTime(); }
-        public String getWeekdayName() { return punch.getWeekdayName(); }
-        public String getPunchType() { 
-            return punch.isPunchIn() ? "IN" : (punch.isPunchOut() ? "OUT" : "N/A");
+        public UUID getId() { return punch != null ? punch.getId() : null; }
+        public LocalDate getAttdate() { return punch != null ? punch.getAttdate() : null; }
+        public Short getWeek() { return punch != null ? punch.getWeek() : null; }
+        public Short getWeekday() { return punch != null ? punch.getWeekday() : null; }
+        public String getWorkcode() { return punch != null ? punch.getWorkcode() : null; }
+
+        // FIXED: Returns the punchstate string directly
+        public String getPunchstate() {
+            return punch != null ? punch.getPunchstate() : null;
+        }
+
+        public LocalDate getPunchdate() { return punch != null ? punch.getPunchdate() : null; }
+        public LocalTime getPunchtime() { return punch != null ? punch.getPunchtime() : null; }
+        public LocalDateTime getPunchdatetime() { return punch != null ? punch.getPunchdatetime() : null; }
+        public String getAdjuststate() { return punch != null ? punch.getAdjuststate() : null; }
+        public Integer getEmpid() { return punch != null ? punch.getEmpid() : null; }
+        public Integer getTransid() { return punch != null ? punch.getTransid() : null; }
+        public UUID getTimecardid() { return punch != null ? punch.getTimecardid() : null; }
+
+        public String getFormattedPunchDateTime() {
+            return punch != null ? punch.getFormattedPunchDateTime() : "N/A";
+        }
+
+        public String getWeekdayName() {
+            return punch != null ? punch.getWeekdayName() : "N/A";
+        }
+
+        // FIXED: Uses the punch.getPunchType() method
+        public String getPunchType() {
+            if (punch == null) return "N/A";
+            return punch.getPunchType();
         }
     }
 }
